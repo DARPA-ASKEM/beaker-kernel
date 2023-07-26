@@ -12,16 +12,17 @@ from typing import Optional, Callable, List, Tuple
 from jupyter_kernel_proxy import JupyterMessage
 from archytas.tool_utils import tool, toolset, AgentRef, LoopControllerRef
 
+from .base import BaseToolset
+
 logging.disable(logging.WARNING)  # Disable warnings
 logger = logging.Logger(__name__)
 
 
 @toolset()
-class DatasetToolset:
+class DatasetToolset(BaseToolset):
     """ """
 
     dataset_id: Optional[int]
-    intercepts: dict[str, callable]
 
     # TODO: Find a better way to organize and store these items. Maybe store as files and load into codeset dict at init?
     CODE = {
@@ -97,8 +98,7 @@ if upload_response.status_code != 200:
     }
 
     def __init__(self, kernel=None, language="python", *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.kernel = kernel
+        super().__init__(kernel=kernel, language=language, *args, **kwargs)
         # TODO: add checks and protections around loading codeset
         self.codeset = self.CODE[language]
         self.intercepts = {

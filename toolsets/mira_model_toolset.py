@@ -15,12 +15,14 @@ import pandas as pd
 from jupyter_kernel_proxy import JupyterMessage
 from archytas.tool_utils import tool, toolset, AgentRef, LoopControllerRef
 
+from .base import BaseToolset
+
 logging.disable(logging.WARNING)  # Disable warnings
 logger = logging.Logger(__name__)
 
 
 @toolset()
-class MiraModelToolset:
+class MiraModelToolset(BaseToolset):
     """ """
 
     CODE = {
@@ -49,8 +51,7 @@ InteractiveShell.instance().display_formatter.format(GraphicalModel.for_jupyter(
     var_name: Optional[str] = "model"
 
     def __init__(self, kernel=None, language="python", *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.kernel = kernel
+        super().__init__(kernel=kernel, language=language, *args, **kwargs)
         # TODO: add checks and protections around loading codeset
         self.codeset = self.CODE[language]
         self.intercepts = {
