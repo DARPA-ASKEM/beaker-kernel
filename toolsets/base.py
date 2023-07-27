@@ -26,6 +26,7 @@ class BaseToolset:
     # Typing
     code: dict[str, str]
     intercepts: dict[str, tuple[Callable, str]]
+    language: str
     kernel: PythonLLMKernel
 
     # TODO: Find a better way to organize and store these items. Maybe store as files and load into codeset dict at init?
@@ -36,6 +37,7 @@ class BaseToolset:
     def __init__(self, kernel=None, language="python", *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.kernel = kernel
+        self.language = language
         # TODO: add checks and protections around loading codeset
         self.codeset = self.CODE[language]
 

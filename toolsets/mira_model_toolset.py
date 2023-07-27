@@ -112,7 +112,7 @@ The model has the following structure:
 --- END ---
 
 Please answer any user queries to the best of your ability, but do not guess if you are not sure of an answer.
-If you are asked to manipulate, stratify, or visualize the model, use the generate_python_code tool.
+If you are asked to manipulate, stratify, or visualize the model, use the generate_code tool.
 """
 
     async def model_structure(self) -> str:
@@ -135,9 +135,9 @@ If you are asked to manipulate, stratify, or visualize the model, use the genera
         return json.dumps(amr, indent=2)
 
     @tool()
-    async def generate_python_code(
+    async def generate_code(
         self, query: str, agent: AgentRef, loop: LoopControllerRef
-    ) -> str:
+    ) -> None:
         """
         Generated Python code to be run in an interactive Jupyter notebook for the purpose of exploring, modifying and visualizing a Pandas Dataframe.
 
@@ -148,9 +148,6 @@ If you are asked to manipulate, stratify, or visualize the model, use the genera
 
         Args:
             query (str): A fully grammatically correct queistion about the current model.
-
-        Returns:
-            str: A LLM prompt that should be passed evaluated.
         """
         # set up the agent
         # str: Valid and correct python code that fulfills the user's request.
