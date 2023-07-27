@@ -28,7 +28,7 @@ dev:dev_ui/build/index.js
 
 dev_ui/build/index.js:dev_ui/src/** dev_ui/index.css dev_ui/*.js dev_ui/*.json dev_ui/templates/**
 	export `cat .env` && \
-	(cd dev_ui && npm install) && \
+	(cd dev_ui && npm run build) && \
 	touch dev_ui/build/*
 
 .PHONY:dev-install
