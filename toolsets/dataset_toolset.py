@@ -26,7 +26,7 @@ class DatasetToolset(BaseToolset):
 
     # TODO: Find a better way to organize and store these items. Maybe store as files and load into codeset dict at init?
     CODE = {
-        "python": {
+        "python3": {
             "name": "Python",
             # TODO: Maybe generate libraries and setup imports from a single source of truth?
             "libraries": """pandas as pd, numpy as np, scipy, pickle""",
@@ -100,7 +100,7 @@ if upload_response.status_code != 200:
         }
     }
 
-    def __init__(self, kernel=None, language="python", *args, **kwargs):
+    def __init__(self, kernel=None, language="python3", *args, **kwargs):
         super().__init__(kernel=kernel, language=language, *args, **kwargs)
         # TODO: add checks and protections around loading codeset
         self.codeset = self.CODE[language]

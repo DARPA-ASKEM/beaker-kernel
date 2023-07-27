@@ -26,7 +26,7 @@ class MiraModelToolset(BaseToolset):
     """ """
 
     CODE = {
-        "python": {
+        "python3": {
             "setup": """
 import requests; import pandas as pd; import numpy as np; import scipy;
 import json; import mira; from mira.modeling.askenet.petrinet import AskeNetPetriNetModel; from mira.sources.askenet.petrinet import template_model_from_askenet_json;
@@ -50,7 +50,7 @@ InteractiveShell.instance().display_formatter.format(GraphicalModel.for_jupyter(
     model_dict: Optional[dict[str, Any]]
     var_name: Optional[str] = "model"
 
-    def __init__(self, kernel=None, language="python", *args, **kwargs):
+    def __init__(self, kernel=None, language="python3", *args, **kwargs):
         super().__init__(kernel=kernel, language=language, *args, **kwargs)
         # TODO: add checks and protections around loading codeset
         self.codeset = self.CODE[language]
@@ -78,7 +78,7 @@ InteractiveShell.instance().display_formatter.format(GraphicalModel.for_jupyter(
         if self.amr:
             await self.load_mira()
         else:
-            raise Exception(f"Model '{model_id}' not found.")
+            raise Exception(f"Model '{item_id}' not found.")
         await self.send_mira_preview_message(parent_header=parent_header)
 
     async def load_mira(self):
@@ -253,7 +253,7 @@ No addtional text is needed in the response, just the code block.
         result = json.dumps(
             {
                 "action": "code_cell",
-                "language": "python",
+                "language": "python3",
                 "content": code.strip(),
             }
         )
