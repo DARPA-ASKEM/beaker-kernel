@@ -7,7 +7,18 @@ build:
 
 .PHONY:dev
 dev:dev_ui/build/index.js
-	export `cat .env` && poetry run python dev.py
+	if [[ "$$(docker compose ps | grep 'jupyter')" == "" ]]; then \
+		docker compose pull && \
+		docker compose up -d --build && \
+		(sleep 1; python -m webbrowser "http://localhost:8888/dev_ui"); \
+		docker compose logs -f jupyter || true; \
+	else \
+		docker compose down jupyter && \
+		docker compose up -d jupyter && \
+		(sleep 1; python -m webbrowser "http://localhost:8888/dev_ui"); \
+		docker compose logs -f jupyter || true; \
+	fi
+
 
 .env:
 	@if [[ ! -e ./.env ]]; then \
