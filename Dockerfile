@@ -1,30 +1,21 @@
 FROM python:3.10
 RUN useradd -m jupyter
 EXPOSE 8888
-WORKDIR /jupyter
-
-# Disabled Julia for now as it is preventing building the image in the build environment
 
 # Install Julia
-# RUN wget --no-verbose -O julia.tar.gz "https://julialang-s3.julialang.org/bin/linux/$(uname -m|sed 's/86_//')/1.9/julia-1.9.0-linux-$(uname -m).tar.gz"
-# RUN tar -xzf "julia.tar.gz" && mv julia-1.9.0 /opt/julia && \
-#     ln -s /opt/julia/bin/julia /usr/local/bin/julia && rm "julia.tar.gz"
+ RUN wget --no-verbose -O julia.tar.gz "https://julialang-s3.julialang.org/bin/linux/$(uname -m|sed 's/86_//')/1.9/julia-1.9.0-linux-$(uname -m).tar.gz"
+ RUN tar -xzf "julia.tar.gz" && mv julia-1.9.0 /opt/julia && \
+     ln -s /opt/julia/bin/julia /usr/local/bin/julia && rm "julia.tar.gz"
 
-# Add Julia to Jupyter
-# USER 1000
-# RUN julia -e 'using Pkg; Pkg.add("IJulia");'
-
-# Install Julia requirements
-# RUN julia -e ' \
-#     packages = [ \
-#         "Catlab", "AlgebraicPetri", "DataSets", "EasyModelAnalysis", "XLSX", "Plots", "Downloads", \
-#         "DataFrames", "ModelingToolkit", "Symbolics", \
-#     ]; \
-#     using Pkg; \
-#     Pkg.add(packages);'
-
-# Install Python requirements
+COPY environments/julia /home/jupyter/.julia/environments/v1.9
+RUN chown -R jupyter:jupyter /home/jupyter
+RUN chmod -R 755 /home/jupyter/.julia
+USER jupyter
+RUN julia -e 'using Pkg; Pkg.instantiate();'
 USER root
+
+WORKDIR /jupyter
+# Install Python requirements
 RUN pip install jupyterlab jupyterlab_server pandas matplotlib xarray numpy poetry scipy
 
 # Install project requirements

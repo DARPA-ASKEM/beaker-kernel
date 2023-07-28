@@ -25,8 +25,7 @@ from jupyter_kernel_proxy import (
 )
 from jupyter_core.paths import jupyter_runtime_dir, jupyter_data_dir
 
-from toolsets.dataset_toolset import DatasetToolset
-from toolsets.mira_model_toolset import MiraModelToolset
+import toolsets.python as pytools
 from archytas.react import ReActAgent
 
 
@@ -46,8 +45,8 @@ MESSAGE_STREAMS = {
 
 
 AVAILABLE_TOOLSETS = {
-    "dataset": DatasetToolset,
-    "mira_model": MiraModelToolset,
+    "dataset": pytools.DatasetToolset,
+    "mira_model": pytools.MiraModelToolset,
 }
 
 
