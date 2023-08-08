@@ -36,7 +36,7 @@ WORKDIR /jupyter
 
 # Kernel hast to go in a specific spot
 COPY llmkernel /usr/local/share/jupyter/kernels/llmkernel
-RUN julia -e 'ENV["JUPYTER"] = "jupyter --data-dir=/usr/local/share/jupyter/kernels"; using Pkg; Pkg.add("IJulia")'
+RUN julia -e 'ENV["JUPYTER_DATA_DIR"] = "/usr/local/share/jupyter"; using Pkg; Pkg.add("IJulia")'
 
 # Copy src code over
 RUN chown 1000:1000 /jupyter

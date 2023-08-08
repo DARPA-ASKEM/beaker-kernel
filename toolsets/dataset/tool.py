@@ -22,7 +22,7 @@ logger = logging.Logger(__name__)
 
 tool_implementations = {
     "python3": python_code,
-    "julia": julia_code
+    "julia-1.9": julia_code
 }
 
 

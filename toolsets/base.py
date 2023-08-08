@@ -32,7 +32,7 @@ class BaseToolset:
     # TODO: Find a better way to organize and store these items. Maybe store as files and load into codeset dict at init?
     CODE = {
         "python3": {},
-        "julia": {}
+        "julia-1.9": {}
     }
 
     def __init__(self, kernel=None, language="python3", *args, **kwargs):
