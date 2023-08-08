@@ -11,7 +11,7 @@ COPY environments/julia /home/jupyter/.julia/environments/v1.9
 RUN chown -R jupyter:jupyter /home/jupyter
 RUN chmod -R 755 /home/jupyter/.julia
 USER jupyter
-RUN julia -e 'using Pkg; Pkg.instantiate(); Pkg.build("IJulia")'
+RUN julia -e 'using Pkg; Pkg.instantiate()'
 USER root
 
 WORKDIR /jupyter
@@ -36,6 +36,7 @@ WORKDIR /jupyter
 
 # Kernel hast to go in a specific spot
 COPY llmkernel /usr/local/share/jupyter/kernels/llmkernel
+RUN julia -e 'ENV["JUPYTER"] = "jupyter --data-dir=/usr/local/share/jupyter/kernels"; using Pkg; Pkg.add("IJulia")'
 
 # Copy src code over
 RUN chown 1000:1000 /jupyter

@@ -14,13 +14,15 @@ from archytas.tool_utils import tool, toolset, AgentRef, LoopControllerRef
 
 from ..base import BaseToolset
 from .pythoncode import CODE as python_code
+from .pythoncode import CODE as julia_code
 
 logging.disable(logging.WARNING)  # Disable warnings
 logger = logging.Logger(__name__)
 
 
 tool_implementations = {
-    "python": python_code
+    "python3": python_code,
+    "julia": julia_code
 }
 
 
@@ -30,10 +32,10 @@ class DatasetToolset(BaseToolset):
 
     dataset_id: Optional[int]
 
-    def __init__(self, kernel=None, language="python", *args, **kwargs):
+    def __init__(self, kernel=None, language="python3", *args, **kwargs):
         super().__init__(kernel=kernel, language=language, *args, **kwargs)
         # TODO: add checks and protections around loading codeset
-        self.codeset = tool_implementations["python"]
+        self.codeset = tool_implementations[language]
         self.intercepts = {
             "download_dataset_request": (self.download_dataset_request, "shell"),
             "save_dataset_request": (self.save_dataset_request, "shell"),
@@ -168,7 +170,7 @@ You are a programmer writing code to help with scientific data analysis and mani
 
 Please write code that satisfies the user's request below.
 
-You have access to a variable name `df` that is a Pandas Dataframe with the following structure:
+You have access to a variable name `df` that is a {self.codeset.get("df_lib_name", "Pandas")} Dataframe with the following structure:
 {df_info}
 
 If you are asked to modify or update the dataframe, modify the dataframe in place, keeping the updated variable to still be named `df`.

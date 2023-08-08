@@ -6,6 +6,7 @@ CODE = {
     "libraries": "pandas as pd, numpy as np, scipy, pickle",
     "setup": "import pandas as pd; import numpy as np; import scipy; import pickle;",
     "load_df": "df = pd.read_csv('{data_url}');",
+    "df_lib_name": "Pandas",
     "df_info": """
         {
             "head": str(df.head(15)),

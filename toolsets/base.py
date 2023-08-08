@@ -14,7 +14,7 @@ from jupyter_kernel_proxy import JupyterMessage
 from archytas.tool_utils import tool, toolset, AgentRef, LoopControllerRef
 
 if TYPE_CHECKING:
-    from llmkernel.kernel import PythonLLMKernel
+    from llmkernel.kernel import LLMKernel
 
 logging.disable(logging.WARNING)  # Disable warnings
 logger = logging.Logger(__name__)
@@ -27,14 +27,15 @@ class BaseToolset:
     code: dict[str, str]
     intercepts: dict[str, tuple[Callable, str]]
     language: str
-    kernel: PythonLLMKernel
+    kernel: LLMKernel
 
     # TODO: Find a better way to organize and store these items. Maybe store as files and load into codeset dict at init?
     CODE = {
-        "python": {},
+        "python3": {},
+        "julia": {}
     }
 
-    def __init__(self, kernel=None, language="python", *args, **kwargs):
+    def __init__(self, kernel=None, language="python3", *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.kernel = kernel
         self.language = language

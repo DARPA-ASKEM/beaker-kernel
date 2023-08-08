@@ -55,7 +55,7 @@ def get_socket(stream_name: str):
     return socket
 
 
-class PythonLLMKernel(KernelProxyManager):
+class LLMKernel(KernelProxyManager):
     implementation = "askem-chatty-py"
     implementation_version = "0.1"
     banner = "Chatty ASKEM"
@@ -303,7 +303,7 @@ class PythonLLMKernel(KernelProxyManager):
         toolset = AVAILABLE_TOOLSETS.get(context, None)
         if not toolset:
             return False
-        self.toolset = toolset(kernel=self)
+        self.toolset = toolset(kernel=self, language=self.subkernel_language)
         self.agent = ReActAgent(
             tools=[self.toolset],
             allow_ask_user=False,
@@ -469,7 +469,7 @@ def start(connection_file):
     with open(connection_file) as f:
         notebook_config = json.load(f)
 
-    kernel = PythonLLMKernel(notebook_config)
+    kernel = LLMKernel(notebook_config)
 
     try:
         loop.start()
