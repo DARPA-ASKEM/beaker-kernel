@@ -1,3 +1,4 @@
+from textwrap import dedent
 
 CODE = {
     "name": "Python",
@@ -71,3 +72,6 @@ CODE = {
         }}
     """,
 }
+
+for key in CODE:
+    CODE[key] = dedent(CODE[key]).strip("\n") 

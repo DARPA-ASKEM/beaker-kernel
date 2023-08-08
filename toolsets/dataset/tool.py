@@ -13,9 +13,15 @@ from jupyter_kernel_proxy import JupyterMessage
 from archytas.tool_utils import tool, toolset, AgentRef, LoopControllerRef
 
 from ..base import BaseToolset
+from .pythoncode import CODE as python_code
 
 logging.disable(logging.WARNING)  # Disable warnings
 logger = logging.Logger(__name__)
+
+
+tool_implementations = {
+    "python": python_code
+}
 
 
 @toolset()
@@ -27,7 +33,7 @@ class DatasetToolset(BaseToolset):
     def __init__(self, kernel=None, language="python", *args, **kwargs):
         super().__init__(kernel=kernel, language=language, *args, **kwargs)
         # TODO: add checks and protections around loading codeset
-        self.codeset = self.CODE[language]
+        self.codeset = tool_implementations["python"]
         self.intercepts = {
             "download_dataset_request": (self.download_dataset_request, "shell"),
             "save_dataset_request": (self.save_dataset_request, "shell"),
