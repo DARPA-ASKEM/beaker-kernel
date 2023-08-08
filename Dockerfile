@@ -11,7 +11,7 @@ COPY environments/julia /home/jupyter/.julia/environments/v1.9
 RUN chown -R jupyter:jupyter /home/jupyter
 RUN chmod -R 755 /home/jupyter/.julia
 USER jupyter
-RUN julia -e 'using Pkg; Pkg.instantiate();'
+RUN julia -e 'using Pkg; Pkg.instantiate(); Pkg.build("IJulia")'
 USER root
 
 WORKDIR /jupyter

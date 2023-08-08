@@ -26,19 +26,19 @@ class DatasetToolset(BaseToolset):
 
     # TODO: Find a better way to organize and store these items. Maybe store as files and load into codeset dict at init?
     CODE = {
-        "python3": {
-            "name": "Python",
+        "julia": {
+            "name": "Julia",
             # TODO: Maybe generate libraries and setup imports from a single source of truth?
-            "libraries": """pandas as pd, numpy as np, scipy, pickle""",
-            "setup": """import pandas as pd; import numpy as np; import scipy; import pickle;""",
-            "load_df": """df = pd.read_csv('{data_url}');""",
+            "libraries": """DataFrames,CSV,HTTP""",
+            "setup": """using DataFrames,CSV,HTTP""",
+            "load_df": """df = DataFrame(CSV.File(IOBuffer(HTTP.get('{data_url}').body))""",
             "df_info": """
-{
-    "head": str(df.head(15)),
-    "columns": str(df.columns),
-    "dtypes": str(df.dtypes),
-    "statistics": str(df.describe()),
-}
+Dict(
+    "head" => string(first(df,15)),
+    "columns" => string(names(df)),
+    "dtypes" => string(eltype.(eachcol(df))),
+    "statistics" => str(describe(df)),
+)
 """.strip(),
             "df_preview": """
 import json
