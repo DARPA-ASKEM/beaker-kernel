@@ -1,17 +1,19 @@
 FROM python:3.10
 RUN useradd -m jupyter
 EXPOSE 8888
+run mkdir -p /usr/local/share/jupyter/kernels && chmod -R 777 /usr/local/share/jupyter/kernels
 
 # Install Julia
- RUN wget --no-verbose -O julia.tar.gz "https://julialang-s3.julialang.org/bin/linux/$(uname -m|sed 's/86_//')/1.9/julia-1.9.0-linux-$(uname -m).tar.gz"
- RUN tar -xzf "julia.tar.gz" && mv julia-1.9.0 /opt/julia && \
-     ln -s /opt/julia/bin/julia /usr/local/bin/julia && rm "julia.tar.gz"
+RUN wget --no-verbose -O julia.tar.gz "https://julialang-s3.julialang.org/bin/linux/$(uname -m|sed 's/86_//')/1.9/julia-1.9.0-linux-$(uname -m).tar.gz"
+RUN tar -xzf "julia.tar.gz" && mv julia-1.9.0 /opt/julia && \
+    ln -s /opt/julia/bin/julia /usr/local/bin/julia && rm "julia.tar.gz"
 
-COPY environments/julia /home/jupyter/.julia/environments/v1.9
-RUN chown -R jupyter:jupyter /home/jupyter
-RUN chmod -R 755 /home/jupyter/.julia
-USER jupyter
+COPY environments/julia /root/.julia/environments/v1.9
+RUN chown -R 1000:1000 /root/.julia
+RUN chmod -R 755 /root/.julia
+USER 1000
 RUN julia -e 'using Pkg; Pkg.instantiate()'
+RUN julia -e 'ENV["JUPYTER_DATA_DIR"] = "/usr/local/share/jupyter"; using Pkg; Pkg.add("IJulia")'
 USER root
 
 WORKDIR /jupyter
@@ -36,7 +38,6 @@ WORKDIR /jupyter
 
 # Kernel hast to go in a specific spot
 COPY llmkernel /usr/local/share/jupyter/kernels/llmkernel
-RUN julia -e 'ENV["JUPYTER_DATA_DIR"] = "/usr/local/share/jupyter"; using Pkg; Pkg.add("IJulia")'
 
 # Copy src code over
 RUN chown 1000:1000 /jupyter
