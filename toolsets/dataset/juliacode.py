@@ -3,26 +3,28 @@ from textwrap import dedent
 CODE = {
     "name": "Julia",
     # TODO: Maybe generate libraries and setup imports from a single source of truth?
-    "libraries": """DataFrames,CSV,HTTP,JSON""",
-    "setup": """using DataFrames, CSV, HTTP, JSON""",
-    "load_df": """df = DataFrame(CSV.File(IOBuffer(HTTP.get('{data_url}').body))""",
+    "libraries": """DataFrames, CSV, HTTP, JSON""",
+    "setup": """using DataFrames, CSV, HTTP, JSON, DisplayAs""",
+    "load_df": """df = DataFrame(CSV.File(IOBuffer(HTTP.get("{data_url}").body)))""",
     "df_lib_name": "DataFrames.jl",
     "df_info": """
-        Dict(
+        JSON.json(Dict(
             "head" => string(first(df,15)),
             "columns" => string(names(df)),
             "dtypes" => string(eltype.(eachcol(df))),
-            "statistics" => str(describe(df)),
-        )
+            "statistics" => string(describe(df)),
+        )) |> DisplayAs.unlimited
     """,
     "df_preview": """
-        split_df = JSON.parse(String(takefirst(df, 30)))
+        _split_df = first(df, 30)
+        _headers = names(_split_df)
+        _data = [Array(_r) for _r=eachrow(_split_df)]
 
-        Dict(
+        JSON.json(Dict(
             "name" => "Temp dataset (not saved)",
-            "headers" => split_df["columns"],
-            "csv" => [split_df["columns"]; split_df["data"]]
-        )
+            "headers" => _headers,
+            "csv" => vcat([_headers], _data),
+        )) |> DisplayAs.unlimited
     """,
     "df_download": """
         output_buff = IOBuffer()

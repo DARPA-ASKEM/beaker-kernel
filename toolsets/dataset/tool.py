@@ -14,7 +14,7 @@ from archytas.tool_utils import tool, toolset, AgentRef, LoopControllerRef
 
 from ..base import BaseToolset
 from .pythoncode import CODE as python_code
-from .pythoncode import CODE as julia_code
+from .juliacode import CODE as julia_code
 
 logging.disable(logging.WARNING)  # Disable warnings
 logger = logging.Logger(__name__)
@@ -129,6 +129,11 @@ If you are asked to manipulate or visualize the dataset, use the generate_code t
 
         df_info_result = await self.kernel.evaluate(self.codeset["df_info"])
         df_info = df_info_result["return"]
+        if isinstance(df_info, str):
+            try:
+                df_info = json.loads(df_info)
+            except json.JSONDecodeError:
+                pass
         if not df_info:
             return None
         output = f"""
@@ -195,7 +200,6 @@ No addtional text is needed in the response, just the code block.
         return result
 
     async def download_dataset_request(self, queue, message_id, data):
-        logger.error("download_dataset_request")
         message = JupyterMessage.parse(data)
         content = message.content
         # TODO: Collect any options that might be needed, if they ever are
@@ -217,7 +221,6 @@ No addtional text is needed in the response, just the code block.
         )  # , parent_header=parent_header)
 
     async def save_dataset_request(self, queue, message_id, data):
-        logger.error("save_dataset_request")
         message = JupyterMessage.parse(data)
         content = message.content
 

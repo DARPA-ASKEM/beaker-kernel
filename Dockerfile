@@ -8,15 +8,15 @@ RUN wget --no-verbose -O julia.tar.gz "https://julialang-s3.julialang.org/bin/li
 RUN tar -xzf "julia.tar.gz" && mv julia-1.9.0 /opt/julia && \
     ln -s /opt/julia/bin/julia /usr/local/bin/julia && rm "julia.tar.gz"
 
-COPY environments/julia /root/.julia/environments/v1.9
-RUN chown -R 1000:1000 /root/.julia
-RUN chmod -R 755 /root/.julia
-USER 1000
-RUN julia -e 'using Pkg; Pkg.instantiate()'
-RUN julia -e 'ENV["JUPYTER_DATA_DIR"] = "/usr/local/share/jupyter"; using Pkg; Pkg.add("IJulia")'
-USER root
+COPY --chown=1000:1000 environments/julia /home/jupyter/.julia/environments/v1.9
+USER jupyter
+WORKDIR /home/jupyter
 
+RUN julia -e 'ENV["JUPYTER_DATA_DIR"] = "/usr/local/share/jupyter"; using Pkg; Pkg.add("IJulia")'
+
+USER root
 WORKDIR /jupyter
+
 # Install Python requirements
 RUN pip install jupyterlab jupyterlab_server pandas matplotlib xarray numpy poetry scipy
 
@@ -29,7 +29,7 @@ RUN poetry install --no-dev
 # Install Mira from `hackathon` branch
 RUN git clone https://github.com/indralab/mira.git /mira
 WORKDIR /mira
-RUN git checkout hackathon
+# RUN git checkout hackathon
 RUN python -m pip install -e .
 RUN apt-get update && \
     apt-get install -y graphviz libgraphviz-dev

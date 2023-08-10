@@ -292,7 +292,15 @@ class LLMKernel(KernelProxyManager):
         result = await self.execute(expression, parent_header=parent_header)
         return_str = result.get("return")
         if return_str:
-            result["return"] = ast.literal_eval(result["return"])
+            # TODO: This auto-conversion to json is probably not actually what we want. Better if it's
+            # explicit rather than implicit.
+            return_obj = ast.literal_eval(result["return"])
+            if isinstance(return_obj, str):
+                try:
+                    return_obj = json.loads(return_obj)
+                except json.JSONDecodeError:
+                    pass
+            result["return"] = return_obj
         return result
 
     async def set_context(self, context, context_info, language="python3", parent_header={}):
