@@ -334,7 +334,7 @@ class LLMKernel(KernelProxyManager):
                 dataset_id = context_info["id"]
                 print(f"Processing dataset w/id {dataset_id}")
                 await self.toolset.set_dataset(dataset_id, parent_header=parent_header)
-                self.context = self.agent.add_context(await self.toolset.context())
+                self.agent.set_auto_context("Default context", self.toolset.context)
             case "mira_model":
                 if getattr(self, "context", None) is not None:
                     self.agent.clear_all_context()
