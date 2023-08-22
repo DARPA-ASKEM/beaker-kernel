@@ -279,7 +279,7 @@ async function createApp(manager: ServiceManager.IManager): void {
     languageSelect.appendChild(option);
   });
   contextPayloadInput.className = 'json-input';
-  contextPayloadInput.value = '{\n  "id": "truth-incident-hospitalization"\n}';
+  contextPayloadInput.value = '{\n  "df_hosp": "truth-incident-hospitalization",\n  "df_cases": "truth-incident-case"\n}';
   contextButton.textContent = 'Submit';
   contextButton.addEventListener("click", (e) => {
     setKernelContext({

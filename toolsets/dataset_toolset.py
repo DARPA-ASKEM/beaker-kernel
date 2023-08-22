@@ -48,14 +48,23 @@ class DatasetToolset(BaseToolset):
 
     async def set_datasets(self, dataset_map, parent_header={}):
         self.dataset_map = dataset_map
-        for var_name, dataset_info in dataset_map.items():
-            dataset_id = dataset_info["id"]
+        for var_name, dataset_map_item in dataset_map.items():
+            if isinstance(dataset_map_item, str):
+                dataset_id = dataset_map_item
+                self.dataset_map[var_name] = {"id": dataset_id}
+            elif isinstance(dataset_map_item, dict):
+                dataset_id = dataset_map_item["id"]
+            else:
+                raise ValueError("Unable to parse dataset mapping")
             meta_url = f"{os.environ['DATA_SERVICE_URL']}/datasets/{dataset_id}"
-            dataset_info = requests.get(meta_url).json()
+            dataset_info_req = requests.get(meta_url)
+            if dataset_info_req.status_code == 404:
+                raise Exception(f"Dataset '{dataset_id}' not found.")
+            dataset_info = dataset_info_req.json()
             if dataset_info:
                 self.dataset_map[var_name]["info"] = dataset_info
             else:
-                raise Exception(f"Dataset '{dataset_id}' not found.")
+                raise Exception(f"Dataset '{dataset_id}' not able to be loaded.")
         await self.load_dataframes()
         await self.send_df_preview_message(parent_header=parent_header)
 
