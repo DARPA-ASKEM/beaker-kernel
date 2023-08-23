@@ -249,11 +249,12 @@ No addtional text is needed in the response, just the code block.
     async def download_dataset_request(self, queue, message_id, data):
         message = JupyterMessage.parse(data)
         content = message.content
+        var_name = content.get("var_name", "df")
         # TODO: Collect any options that might be needed, if they ever are
 
         # TODO: This doesn't work very well. Is very slow to encode, and transfer all of the required messages multiple times proxies through the proxy kernel.
         # We should find a better way to accomplish this if it's needed.
-        code = self.get_code("df_download")
+        code = self.get_code("df_download", {"var_name": var_name})
         df_response = await self.kernel.evaluate(code)
         df_contents = df_response.get("stdout_list")
         self.kernel.send_response(
@@ -274,6 +275,7 @@ No addtional text is needed in the response, just the code block.
         parent_dataset_id = content.get("parent_dataset_id")
         new_name = content.get("name")
         filename = content.get("filename", None)
+        var_name = content.get("var_name", "df")
         dataservice_url = os.environ["DATA_SERVICE_URL"]
 
         if filename is None:
@@ -286,6 +288,7 @@ No addtional text is needed in the response, just the code block.
                 "new_name": new_name,
                 "filename": filename,
                 "dataservice_url": dataservice_url,
+                "var_name": var_name,
             }
         )
 
