@@ -8,7 +8,7 @@ RUN wget --no-verbose -O julia.tar.gz "https://julialang-s3.julialang.org/bin/li
 RUN tar -xzf "julia.tar.gz" && mv julia-1.9.0 /opt/julia && \
     ln -s /opt/julia/bin/julia /usr/local/bin/julia && rm "julia.tar.gz"
 
-COPY --chown=1000:1000 environments/julia /home/jupyter/.julia/environments/v1.9
+# COPY --chown=1000:1000 environments/julia /home/jupyter/.julia/environments/v1.9
 USER jupyter
 WORKDIR /home/jupyter
 
