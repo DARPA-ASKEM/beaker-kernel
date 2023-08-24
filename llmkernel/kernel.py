@@ -25,6 +25,7 @@ from jupyter_kernel_proxy import (
 )
 from jupyter_core.paths import jupyter_runtime_dir, jupyter_data_dir
 
+from subkernels.base import BaseSubkernel, get_subkernel
 from toolsets import DatasetToolset, MiraModelToolset
 from archytas.react import ReActAgent
 
@@ -67,6 +68,7 @@ class LLMKernel(KernelProxyManager):
     }
 
     internal_executions: set[str]
+    subkernel: BaseSubkernel
     subkernel_execution_tracking: dict[str, str]
 
     def __init__(self, server):
@@ -99,6 +101,15 @@ class LLMKernel(KernelProxyManager):
 
     def new_kernel(self, language: str):
         # Shutdown any existing subkernel (if it exists) before spinnup up a new kernel
+        from subkernels.python import PythonSubkernel
+        from subkernels.julia import JuliaSubkernel
+        from subkernels.rlang import RSubkernel
+        kernel_opts = {
+            "python3": PythonSubkernel,
+            "julia-1.9": JuliaSubkernel,
+            "ir": RSubkernel,
+        }
+
         self.shutdown_subkernel()
 
         res = requests.post(
@@ -111,6 +122,7 @@ class LLMKernel(KernelProxyManager):
         self.subkernel_id = kernel_info["id"]
         self.subkernel_language = language
         self.connect_to(self.subkernel_id)
+        self.subkernel = kernel_opts[language]()
 
     def shutdown_subkernel(self):
         if self.subkernel_id is not None:
@@ -290,17 +302,12 @@ class LLMKernel(KernelProxyManager):
 
     async def evaluate(self, expression, parent_header={}):
         result = await self.execute(expression, parent_header=parent_header)
-        return_str = result.get("return")
-        if return_str:
-            # TODO: This auto-conversion to json is probably not actually what we want. Better if it's
-            # explicit rather than implicit.
-            return_obj = ast.literal_eval(result["return"])
-            if isinstance(return_obj, str):
-                try:
-                    return_obj = json.loads(return_obj)
-                except json.JSONDecodeError:
-                    pass
-            result["return"] = return_obj
+        try:
+            parsed_result = self.subkernel.parse_subkernel_return(result)
+            result["return"] = parsed_result
+        except Exception:
+            logger.error("Unable to parse result.")
+            logger.debug("Subkernel: %s\nResult:\n%s", self.subkernel, result)
         return result
 
     async def set_context(self, context, context_info, language="python3", parent_header={}):
