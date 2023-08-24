@@ -38,7 +38,7 @@ group "default" {
 # ----------------------------------------------------------------------------------------------------------------------
 
 target "_platforms" {
-  platforms = ["linux/amd64", "linux/arm64"]
+  platforms = ["linux/arm64"]
 }
 
 target "jupyter-llm-base" {
