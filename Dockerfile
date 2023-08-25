@@ -1,7 +1,7 @@
 FROM python:3.10
 RUN useradd -m jupyter
 EXPOSE 8888
-run mkdir -p /usr/local/share/jupyter/kernels && chmod -R 777 /usr/local/share/jupyter/kernels
+RUN mkdir -p /usr/local/share/jupyter/kernels && chmod -R 777 /usr/local/share/jupyter/kernels
 
 # Install Julia
 RUN wget --no-verbose -O julia.tar.gz "https://julialang-s3.julialang.org/bin/linux/$(uname -m|sed 's/86_//')/1.9/julia-1.9.0-linux-$(uname -m).tar.gz"
@@ -9,7 +9,7 @@ RUN tar -xzf "julia.tar.gz" && mv julia-1.9.0 /opt/julia && \
     ln -s /opt/julia/bin/julia /usr/local/bin/julia && rm "julia.tar.gz"
 
 # COPY --chown=1000:1000 environments/julia /home/jupyter/.julia/environments/v1.9
-USER jupyter
+# USER jupyter
 WORKDIR /home/jupyter
 
 RUN julia -e 'ENV["JUPYTER_DATA_DIR"] = "/usr/local/share/jupyter"; using Pkg; Pkg.add("IJulia")'
