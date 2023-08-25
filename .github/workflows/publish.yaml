@@ -20,7 +20,7 @@ jobs:
   bake:
     needs:
       - tag-generator
-    uses: darpa-askem/.github/.github/workflows/bake-publish.yml@main
+    uses: darpa-askem/.github/.github/workflows/bake-publish.yml@driver
     with:
       file: 'docker-bake.hcl'
       group: 'prod'
