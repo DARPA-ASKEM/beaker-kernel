@@ -8,10 +8,10 @@ import requests
 import sys
 from typing import Optional, Any
 
-from jupyter_kernel_proxy import JupyterMessage
 from archytas.tool_utils import tool, toolset, AgentRef, LoopControllerRef
 
 from .base import BaseToolset
+from lib.jupyter_kernel_proxy import JupyterMessage
 
 logging.disable(logging.WARNING)  # Disable warnings
 logger = logging.Logger(__name__)

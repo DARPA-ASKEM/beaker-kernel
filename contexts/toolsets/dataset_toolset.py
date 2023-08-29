@@ -10,11 +10,10 @@ import tempfile
 from functools import partial
 from typing import Optional, Callable, List, Tuple, Any
 
-from jupyter_kernel_proxy import JupyterMessage
 from archytas.tool_utils import tool, toolset, AgentRef, LoopControllerRef
 
 from .base import BaseToolset
-from subkernels.code_templates import get_metadata, get_template
+from lib.jupyter_kernel_proxy import JupyterMessage
 
 
 logging.disable(logging.WARNING)  # Disable warnings
@@ -115,7 +114,7 @@ class DatasetToolset(BaseToolset):
     async def update_dataset_map(self, parent_header={}):
         code = self.get_code("df_info")
         df_info_response = await self.kernel.evaluate(
-            code, 
+            code,
             parent_header=parent_header,
         )
         df_info = df_info_response.get('return')

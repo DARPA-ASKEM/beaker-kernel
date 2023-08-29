@@ -16,18 +16,22 @@ import uuid
 
 from IPython.core.interactiveshell import InteractiveShell
 from tornado import ioloop
-from jupyter_kernel_proxy import (
+from jupyter_core.paths import jupyter_runtime_dir, jupyter_data_dir
+
+from archytas.react import ReActAgent
+
+from lib.jupyter_kernel_proxy import (
     KernelProxyManager,
     JupyterMessage,
     InterceptionFilter,
     KERNEL_SOCKETS,
     KERNEL_SOCKETS_NAMES,
 )
-from jupyter_core.paths import jupyter_runtime_dir, jupyter_data_dir
-
-from subkernels.base import BaseSubkernel, get_subkernel
-from toolsets import DatasetToolset, MiraModelToolset
-from archytas.react import ReActAgent
+from contexts.subkernels.base import BaseSubkernel, get_subkernel
+from contexts.subkernels.python import PythonSubkernel
+from contexts.subkernels.julia import JuliaSubkernel
+from contexts.subkernels.rlang import RSubkernel
+from contexts.toolsets import DatasetToolset, MiraModelToolset
 
 
 logger = logging.getLogger(__name__)
@@ -101,9 +105,6 @@ class LLMKernel(KernelProxyManager):
 
     def new_kernel(self, language: str):
         # Shutdown any existing subkernel (if it exists) before spinnup up a new kernel
-        from subkernels.python import PythonSubkernel
-        from subkernels.julia import JuliaSubkernel
-        from subkernels.rlang import RSubkernel
         kernel_opts = {
             "python3": PythonSubkernel,
             "julia-1.9": JuliaSubkernel,

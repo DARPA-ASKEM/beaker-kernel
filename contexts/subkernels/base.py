@@ -1,7 +1,9 @@
 import abc
 from typing import Dict, Any
-from .code_templates import get_template
+from ..codesets import get_template
 
+def get_subkernel():
+    pass
 
 class BaseSubkernel(abc.ABC):
     DISPLAY_NAME: str
@@ -16,5 +18,5 @@ class BaseSubkernel(abc.ABC):
     def parse_subkernel_return(cls) -> Any:
         ...
 
-    
+
 

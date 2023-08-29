@@ -10,8 +10,8 @@ import requests
 import tempfile
 from typing import Optional, Callable, List, Tuple, Dict, Any, TYPE_CHECKING
 
-from subkernels.code_templates import get_metadata, get_template
-from jupyter_kernel_proxy import JupyterMessage
+from ..codesets import get_metadata, get_template
+from lib.jupyter_kernel_proxy import JupyterMessage
 from archytas.tool_utils import tool, toolset, AgentRef, LoopControllerRef
 
 if TYPE_CHECKING:
