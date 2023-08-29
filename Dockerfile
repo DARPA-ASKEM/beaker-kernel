@@ -54,5 +54,5 @@ COPY --chown=1000:1000 . /jupyter
 # Switch to non-root user
 USER jupyter
 
-CMD ["python", "service/main.py", "--ip", "0.0.0.0", ""]
+CMD ["python", "service/main.py", "--ip", "0.0.0.0"]
 

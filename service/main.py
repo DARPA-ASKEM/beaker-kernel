@@ -48,6 +48,7 @@ class AskemJupyterApp(LabServerApp):
     app_name = "Askem Jupyter App"
     app_version = version
     allow_origin = "*"
+    open_browser = False
 
     def initialize_handlers(self):
         """Bypass initializing the default handler since we don't need to use the webserver, just the websockets."""
