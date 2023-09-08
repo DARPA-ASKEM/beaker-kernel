@@ -14,7 +14,6 @@ class RSubkernel(BaseSubkernel):
     KERNEL_NAME = "ir"
     DATAFRAME_TYPE_NAME = "data.frame"
     
-
     @classmethod
     def parse_subkernel_return(cls, execution_result) -> Any:
         # irkernel annoyingly does not return the last item in the code execution as the "return" item, so we print the response as part of the output
@@ -24,7 +23,7 @@ class RSubkernel(BaseSubkernel):
         if return_raw:
             return_str = ast.literal_eval(return_raw)
             try:
-                return_obj = json.loads(return_str)
+                python_obj = json.loads(return_str)
             except json.JSONDecodeError:
                 raise
-            return return_obj
+            return python_obj

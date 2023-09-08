@@ -2,8 +2,6 @@ import abc
 from typing import Dict, Any
 from ..codesets import get_template
 
-def get_subkernel():
-    pass
 
 class BaseSubkernel(abc.ABC):
     DISPLAY_NAME: str
@@ -14,9 +12,7 @@ class BaseSubkernel(abc.ABC):
     def get_code(self, toolset_name: str, name: str, render_dict: Dict[str, Any]={}) -> str:
         return get_template(toolset_name, self.KERNEL_NAME, name, render_dict)
 
-    @abc.abstractclassmethod
-    def parse_subkernel_return(cls) -> Any:
+    @classmethod
+    @abc.abstractmethod
+    def parse_subkernel_return(cls, execution_result) -> Any:
         ...
-
-
-
