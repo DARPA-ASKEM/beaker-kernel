@@ -26,7 +26,12 @@ dev:service/dev_ui/build/index.js
 		echo "Don't forget to set your OPENAI key in the .env file!"; \
 	fi
 
-service/dev_ui/build/index.js:service/dev_ui/src/** service/dev_ui/index.css service/dev_ui/*.js service/dev_ui/*.json service/dev_ui/templates/**
+service/dev_ui/node_modules:service/dev_ui/package*.json
+	export `cat .env` && \
+	(cd service/dev_ui && npm install) && \
+	touch service/dev_ui/node_modules
+
+service/dev_ui/build/index.js:service/dev_ui/node_modules service/dev_ui/src/** service/dev_ui/index.css service/dev_ui/*.js service/dev_ui/*.json service/dev_ui/templates/**
 	export `cat .env` && \
 	(cd service/dev_ui && npm run build) && \
 	touch service/dev_ui/build/*
