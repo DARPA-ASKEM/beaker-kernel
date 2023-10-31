@@ -140,17 +140,15 @@ No addtional text is needed in the response, just the code block.
         return result
 
     async def send_decapodes_preview_message(
-        self, server=None, target_stream=None, data=None, parent_header={}
+        self, server=None, target_stream=None, data=None, parent_header=None
     ):
-        preview = await self.context.evaluate(self.get_code("expr_to_info"))
-        json_str = preview["return"]["application/json"]
-        image = preview["return"]["image/svg"]
-        content = {
-            "data": {
-                "application/json": json_str,
-                "image/svg": image,
-            }
-        }
+        if parent_header is None:
+            parent_header = {}
+        result = await self.context.evaluate(self.get_code("expr_to_info"))
+        content = result["return"]
+        if content is None:
+            raise RuntimeError("Info not returned for preview")
+        
         self.context.kernel.send_response(
             "iopub", "decapodes_preview", content, parent_header=parent_header
         )
@@ -175,4 +173,27 @@ No addtional text is needed in the response, just the code block.
         await self.send_decapodes_preview_message(parent_header=message.header)
 
     async def save_amr_request(self, server, target_stream, data):
-        pass
+        message = JupyterMessage.parse(data)
+        content = message.content
+
+        header = content["header"]
+        header["_type"] = "Header"
+        
+        preview = await self.context.evaluate(self.get_code("expr_to_info"))
+        model = preview["return"]["application/json"]
+
+        amr = {
+            "header": header,
+            "model": model,
+            "_type": "ASKEMDecaExpr",
+            "annotations": [],
+        }
+
+        create_req = requests.post(
+            f"{os.environ['DATA_SERVICE_URL']}/models", json=amr
+        )
+        new_model_id = create_req.json()["id"]
+
+        self.context.kernel.send_response(
+            "iopub", "save_model_response", content, parent_header=message.header
+        )
