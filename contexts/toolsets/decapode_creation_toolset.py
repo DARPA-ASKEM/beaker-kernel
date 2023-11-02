@@ -221,7 +221,6 @@ No addtional text is needed in the response, just the code block.
         content = message.content
 
         header =  {
-            "id": content.get("id", None),
             "description": content.get("description", None),
             "name": content.get("name", None),
             "_type": "Header",
@@ -229,6 +228,9 @@ No addtional text is needed in the response, just the code block.
             "schema": "https://raw.githubusercontent.com/DARPA-ASKEM/Model-Representations/decapodes-intertypes/decapodes/decapodes_schema.json",
             "schema_name": "decapode"
         }        
+        id_value = content.get("id", None)
+        if id_value:
+            header['id'] = id_value
 
         preview = await self.context.evaluate(self.get_code("expr_to_info", {"var_name": self.var_name}))
         model = preview["return"]["application/json"]
