@@ -14,7 +14,7 @@ end
 
 _response = Dict(
     "application/json" => generate_json_acset({{ target }}),
-    "image/svg" => expr_to_svg({{ target }})
+    # "image/svg" => expr_to_svg({{ target }}) # TODO: Reinclude when graphviz bug is fixed
 )
 
 
