@@ -10,6 +10,11 @@ variable "VERSION" {
 
 # ----------------------------------------------------------------------------------------------------------------------
 
+function "buildtag" {
+  params = [image_name, prefix, suffix]
+  result = [ "${DOCKER_REGISTRY}/${DOCKER_ORG}/${image_name}:${check_prefix(prefix)}${VERSION}${check_suffix(suffix)}", "${image_name}:build" ]
+}
+
 function "tag" {
   params = [image_name, prefix, suffix]
   result = [ "${DOCKER_REGISTRY}/${DOCKER_ORG}/${image_name}:${check_prefix(prefix)}${VERSION}${check_suffix(suffix)}" ]
@@ -28,7 +33,7 @@ function "check_suffix" {
 # ----------------------------------------------------------------------------------------------------------------------
 
 group "prod" {
-  targets = ["beaker-kernel"]
+  targets = ["beaker-kernel", "askem-julia-base"]
 }
 
 group "default" {
@@ -41,10 +46,23 @@ target "_platforms" {
   platforms = ["linux/amd64"]
 }
 
+target "askem-julia-base" {
+    inherits = ["_platforms"]
+	context = "environments/julia/"
+	tags = tag("askem-julia-base", "", "")
+	dockerfile = "Dockerfile"
+}
+
 target "beaker-kernel-base" {
+    contexts = {
+        askem-julia-base = "target:askem-julia-base"
+    }
 	context = "."
 	tags = tag("beaker-kernel", "", "")
 	dockerfile = "Dockerfile"
+    args = {
+        JULIA_IMAGE = "askem-julia-base"
+    }
 }
 
 target "beaker-kernel" {
