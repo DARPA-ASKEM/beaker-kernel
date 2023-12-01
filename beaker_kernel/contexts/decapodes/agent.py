@@ -2,7 +2,7 @@ import json
 import logging
 import re
 
-from archytas.tool_utils import tool, toolset, AgentRef, LoopControllerRef
+from archytas.tool_utils import AgentRef, LoopControllerRef, tool, toolset
 
 from beaker_kernel.lib.agent import BaseAgent
 from beaker_kernel.lib.context import BaseContext

@@ -4,34 +4,26 @@ import inspect
 import json
 import logging
 import os
-import requests
 import sys
 import traceback
-from typing import Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
+import requests
 from tornado import ioloop
 
-from .lib.jupyter_kernel_proxy import (
-    KernelProxyManager,
-    JupyterMessage,
-    InterceptionFilter,
-    KERNEL_SOCKETS,
-    KERNEL_SOCKETS_NAMES,
-)
-
-from .lib.context import BaseContext
-
-# TODO: Move to autodiscovery
-from .lib.subkernels.python import PythonSubkernel
-from .lib.subkernels.julia import JuliaSubkernel
-from .lib.subkernels.rlang import RSubkernel
-
-# TODO: Move to autodiscovery
-from .lib.context import collect_contexts
-from .contexts.pypackage.context import PyPackageContext
+# TODO: Move context import to autodiscovery
 from .contexts.dataset.context import DatasetContext
-from .contexts.mira_model.context import MiraModelContext
 from .contexts.decapodes.context import DecapodesContext
+from .contexts.mira_model.context import MiraModelContext
+from .contexts.pypackage.context import PyPackageContext
+from .lib.context import BaseContext, collect_contexts
+from .lib.jupyter_kernel_proxy import (KERNEL_SOCKETS, KERNEL_SOCKETS_NAMES,
+                                       InterceptionFilter, JupyterMessage,
+                                       KernelProxyManager)
+# TODO: Move subkernel import to autodiscovery
+from .lib.subkernels.julia import JuliaSubkernel
+from .lib.subkernels.python import PythonSubkernel
+from .lib.subkernels.rlang import RSubkernel
 
 if TYPE_CHECKING:
     from .lib.agent import BaseAgent

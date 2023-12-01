@@ -3,8 +3,9 @@ import datetime
 import json
 import logging
 import os
+from typing import TYPE_CHECKING, Any, Dict, Optional
+
 import requests
-from typing import Any, Dict, TYPE_CHECKING, Optional
 
 from beaker_kernel.lib.context import BaseContext
 from beaker_kernel.lib.jupyter_kernel_proxy import JupyterMessage

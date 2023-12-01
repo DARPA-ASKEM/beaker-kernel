@@ -1,7 +1,8 @@
 import json
 import os.path
-from jinja2 import Environment, select_autoescape, FileSystemLoader, Template
-from typing import Dict, Any
+from typing import Any, Dict
+
+from jinja2 import Environment, FileSystemLoader, Template, select_autoescape
 
 # Persistent registry of templates, split into a tree structure by toolset, language, then name.
 templates: Dict[str, Dict[str, Dict[str, Template]]] = {}

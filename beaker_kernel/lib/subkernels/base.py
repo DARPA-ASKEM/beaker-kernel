@@ -1,5 +1,6 @@
 import abc
-from typing import Dict, Any
+from typing import Any, Dict
+
 from beaker_kernel.lib.codeset import get_template
 
 

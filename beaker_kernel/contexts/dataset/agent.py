@@ -1,23 +1,14 @@
-import codecs
-import copy
-import datetime
 import json
 import logging
-import os
 import re
-from archytas.react import Undefined
-import requests
-import tempfile
-from functools import partial
-from typing import Optional, Callable, List, Tuple, Any
 
-from archytas.tool_utils import tool, toolset, AgentRef, LoopControllerRef
+from archytas.react import Undefined
+from archytas.tool_utils import AgentRef, LoopControllerRef, tool, toolset
 
 from beaker_kernel.lib.agent import BaseAgent
 from beaker_kernel.lib.context import BaseContext
-from beaker_kernel.lib.toolset import BaseToolset
 from beaker_kernel.lib.jupyter_kernel_proxy import JupyterMessage
-
+from beaker_kernel.lib.toolset import BaseToolset
 
 logging.disable(logging.WARNING)  # Disable warnings
 logger = logging.Logger(__name__)

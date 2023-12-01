@@ -3,10 +3,8 @@ import logging
 import re
 import typing
 
-
 from archytas.react import ReActAgent, Undefined
-from archytas.tool_utils import tool, AgentRef, LoopControllerRef
-
+from archytas.tool_utils import AgentRef, LoopControllerRef, tool
 
 if typing.TYPE_CHECKING:
     from .context import BaseContext

@@ -1,14 +1,13 @@
-from typing import Any, Dict, Type, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Dict
+
 from beaker_kernel.lib.context import BaseContext
-# from beaker_kernel.lib.codeset import Codeset
 from beaker_kernel.lib.subkernels.python import PythonSubkernel
-# from beaker_kernel.lib.toolset import BaseToolset
 
 from .agent import PyPackageAgent
 
 if TYPE_CHECKING:
-    from beaker_kernel.lib.agent import BaseAgent
     from beaker_kernel.kernel import LLMKernel
+    from beaker_kernel.lib.agent import BaseAgent
     from beaker_kernel.lib.subkernels.base import BaseSubkernel
 
 class PyPackageContext(BaseContext):

@@ -1,14 +1,12 @@
-import json
 import logging
-import re
-import typing
-from archytas.react import Undefined
 
-from archytas.tool_utils import tool, toolset, AgentRef, LoopControllerRef, is_tool
+from archytas.react import Undefined
+from archytas.tool_utils import (AgentRef, LoopControllerRef, is_tool, tool,
+                                 toolset)
 
 from beaker_kernel.lib.agent import BaseAgent
 from beaker_kernel.lib.context import BaseContext
-# from beaker_kernel.lib.context import BaseContext
+
 
 logger = logging.getLogger(__name__)
 

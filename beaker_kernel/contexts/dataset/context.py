@@ -1,14 +1,14 @@
 import os
 import requests
-from typing import Any, Dict, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Dict
 
 from beaker_kernel.lib.context import BaseContext
 
 from .agent import DatasetAgent
 
 if TYPE_CHECKING:
-    from beaker_kernel.lib.agent import BaseAgent
     from beaker_kernel.kernel import LLMKernel
+    from beaker_kernel.lib.agent import BaseAgent
     from beaker_kernel.lib.subkernels.base import BaseSubkernel
 
 

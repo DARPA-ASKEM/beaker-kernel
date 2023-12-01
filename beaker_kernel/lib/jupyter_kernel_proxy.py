@@ -5,24 +5,22 @@
 # Author: Marc-Etienne M.Léveillé <leveille@eset.com>
 # See LICENSE file for redistribution.
 
-import json
-import hmac
-import uuid
-import hashlib
 import datetime
 import glob
+import hashlib
+import hmac
+import json
+import logging
 import os
-import six
-from collections import namedtuple, OrderedDict
+import uuid
+from collections import OrderedDict, namedtuple
 from operator import attrgetter
 
-from jupyter_core.paths import jupyter_runtime_dir
-
+import six
 import zmq
+from jupyter_core.paths import jupyter_runtime_dir
 from tornado import ioloop
 from zmq.eventloop import zmqstream
-
-import logging
 
 logger = logging.getLogger(__name__)
 
