@@ -36,9 +36,7 @@ except ImportError:
     pass
 help({target})
 '''
-        logger.error(code)
         r = await agent.context.evaluate(code)
-        logger.error(r)
         return str(r)
 
     retrieve_documentation.__doc__

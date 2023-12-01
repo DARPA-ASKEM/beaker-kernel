@@ -33,7 +33,6 @@ class BaseContext:
 
 
     def __init__(self, beaker_kernel: "LLMKernel", subkernel: "BaseSubkernel", agent_cls: "BaseAgent", config: Dict[str, Any]) -> None:  # toolset_cls: Type["BaseToolset"],
-        logger.error("base context init")
         self.beaker_kernel = beaker_kernel
         self.subkernel = subkernel
         # self.toolset = toolset_cls(context=self)
@@ -45,7 +44,6 @@ class BaseContext:
 
         # Add intercepts
         for message, (handler, stream) in self.intercepts.items():
-            logger.error(f"{message, handler, stream}")
             self.beaker_kernel.add_intercept(message, handler, stream=stream)
 
         # Set auto-context from toolset

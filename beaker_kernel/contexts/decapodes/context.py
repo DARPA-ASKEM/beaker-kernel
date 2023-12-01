@@ -31,7 +31,6 @@ class DecapodesContext(BaseContext):
             "compile_expr_request": (self.compile_expr, "shell"),
         }
         self.reset()
-        logger.error("Decapodes context init")
         super().__init__(beaker_kernel, subkernel, self.agent_cls, config)
 
 
