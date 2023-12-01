@@ -3,48 +3,48 @@ import datetime
 import json
 import logging
 import os
-import re
 import requests
-import sys
-from typing import Optional, Any
+from typing import Any, Dict, TYPE_CHECKING, Optional
 
-from archytas.tool_utils import tool, toolset, AgentRef, LoopControllerRef
+from beaker_kernel.lib.context import BaseContext
+from beaker_kernel.lib.jupyter_kernel_proxy import JupyterMessage
 
-from .base import BaseToolset
-from lib.jupyter_kernel_proxy import JupyterMessage
+from .agent import MiraModelAgent
 
-logging.disable(logging.WARNING)  # Disable warnings
-logger = logging.Logger(__name__)
+if TYPE_CHECKING:
+    from beaker_kernel.kernel import LLMKernel
+    from beaker_kernel.lib.subkernels.base import BaseSubkernel
+
+logger = logging.getLogger(__name__)
 
 
-@toolset()
-class MiraModelToolset(BaseToolset):
-    """ """
+class MiraModelContext(BaseContext):
 
-    toolset_name = "mira_model"
+    slug = "mira_model"
+    agent_cls = MiraModelAgent
 
     model_id: Optional[str]
     model_json: Optional[str]
     model_dict: Optional[dict[str, Any]]
     var_name: Optional[str] = "model"
 
-    def __init__(self, context, *args, **kwargs):
-        super().__init__(context=context, *args, **kwargs)
+    def __init__(self, beaker_kernel: "LLMKernel", subkernel: "BaseSubkernel", config: Dict[str, Any]) -> None:
         self.intercepts = {
             "save_amr_request": (self.save_amr_request, "shell"),
             "reset_request": (self.reset_request, "shell"),
             "stratify_request": (self.stratify_request, "shell"),
         }
         self.reset()
+        super().__init__(beaker_kernel, subkernel, self.agent_cls, config)
 
     async def setup(self, config, parent_header):
+        self.config = config
         item_id = config["id"]
         item_type = config.get("type", "model")
         print(f"Processing {item_type} AMR {item_id} as a MIRA model")
         await self.set_model(
             item_id, item_type, parent_header=parent_header
         )
-
 
     async def post_execute(self, message):
         await self.send_mira_preview_message(parent_header=message.parent_header)
@@ -80,7 +80,7 @@ class MiraModelToolset(BaseToolset):
             ]
         )
         print(f"Running command:\n-------\n{command}\n---------")
-        await self.context.execute(command)
+        await self.execute(command)
 
     def reset(self):
         self.model_id = None
@@ -115,145 +115,18 @@ If you are asked to manipulate, stratify, or visualize the model, use the genera
         # Update the local dataframe to match what's in the shell.
         # This will be factored out when we switch around to allow using multiple runtimes.
         amr = (
-            await self.context.evaluate(
-                f"AskeNetPetriNetModel(Model({self.var_name})).to_json()"
-            )
+            await self.evaluate(self.get_code("model_to_json", {"var_name": self.var_name}))
         )["return"]
         return json.dumps(amr, indent=2)
-
-    @tool()
-    async def generate_code(
-        self, query: str, agent: AgentRef, loop: LoopControllerRef
-    ) -> None:
-        """
-        Generated Python code to be run in an interactive Jupyter notebook for the purpose of exploring, modifying and visualizing a Pandas Dataframe.
-
-        Input is a full grammatically correct question about or request for an action to be performed on the loaded model.
-
-        Assume that the model is already loaded and has the variable named `model`.
-        Information about the dataframe can be loaded with the `model_structure` tool.
-
-        Args:
-            query (str): A fully grammatically correct queistion about the current model.
-        """
-        # set up the agent
-        # str: Valid and correct python code that fulfills the user's request.
-        prompt = f"""
-You are a programmer writing code to help with scientific data analysis and manipulation in Python.
-
-Please write code that satisfies the user's request below.
-
-You have access to a variable name `model` that is a Petrinet model with the following structure:
-{await self.model_structure()}
-
-
-If you are asked to modify or update the model, modify the model in place, keeping the updated variable to still be named `model`.
-You have access to the MIRA libraries.
-
-If you are asked to stratify the model, use the available function named `stratify` that is defined by the following python code:
-````````````````````
-def stratify(
-    template_model: TemplateModel,
-    *,
-    key: str,
-    strata: Collection[str],
-    structure: Optional[Iterable[Tuple[str, str]]] = None,
-    directed: bool = False,
-    conversion_cls: Type[Template] = NaturalConversion,
-    cartesian_control: bool = False,
-    modify_names: bool = True,
-    params_to_stratify: Optional[Collection[str]] = None,
-    params_to_preserve: Optional[Collection[str]] = None,
-    concepts_to_stratify: Optional[Collection[str]] = None,
-    concepts_to_preserve: Optional[Collection[str]] = None,
-) -> TemplateModel:
-    \"\"\"Multiplies a model into several strata.
-
-    E.g., can turn the SIR model into a two-city SIR model by splitting each concept into
-    two derived concepts, each with the context for one of the two cities
-
-    Parameters
-    ----------
-    template_model :
-        A template model
-    key :
-        The (singular) name of the stratification, e.g., ``"city"``
-    strata :
-        A list of the values for stratification, e.g., ``["boston", "nyc"]``
-    structure :
-        An iterable of pairs corresponding to a directed network structure
-        where each of the pairs has two strata. If none given, will assume a complete
-        network structure. If no structure is necessary, pass an empty list.
-    directed :
-        Should the reverse direction conversions be added based on the given structure?
-    conversion_cls :
-        The template class to be used for conversions between strata
-        defined by the network structure. Defaults to :class:`NaturalConversion`
-    cartesian_control :
-        If true, splits all control relationships based on the stratification.
-
-        This should be true for an SIR epidemiology model, the susceptibility to
-        infected transition is controlled by infected. If the model is stratified by
-        vaccinated and unvaccinated, then the transition from vaccinated
-        susceptible population to vaccinated infected populations should be
-        controlled by both infected vaccinated and infected unvaccinated
-        populations.
-
-        This should be false for stratification of an SIR epidemiology model based
-        on cities, since the infected population in one city won't (directly,
-        through the perspective of the model) affect the infection of susceptible
-        population in another city.
-    modify_names :
-        If true, will modify the names of the concepts to include the strata
-        (e.g., ``"S"`` becomes ``"S_boston"``). If false, will keep the original
-        names.
-    params_to_stratify :
-        A list of parameters to stratify. If none given, will stratify all
-        parameters.
-    params_to_preserve:
-        A list of parameters to preserve. If none given, will stratify all
-        parameters.
-    concepts_to_stratify :
-        A list of concepts to stratify. If none given, will stratify all
-        concepts.
-    concepts_to_preserve:
-        A list of concepts to preserve. If none given, will stratify all
-        concepts.
-
-    Returns
-    -------
-    :
-        A stratified template model
-    \"\"\"
-````````````````````
-
-You also have access to the libraries pandas, numpy, scipy, matplotlib and the full mira python library.
-
-Please generate the code as if you were programming inside a Jupyter Notebook and the code is to be executed inside a cell.
-You MUST wrap the code with a line containing three backticks (```) before and after the generated code.
-No addtional text is needed in the response, just the code block.
-"""
-
-        llm_response = await agent.oneshot(prompt=prompt, query=query)
-        loop.set_state(loop.STOP_SUCCESS)
-        preamble, code, coda = re.split("```\w*", llm_response)
-        result = json.dumps(
-            {
-                "action": "code_cell",
-                "language": "python3",
-                "content": code.strip(),
-            }
-        )
-        return result
 
     async def send_mira_preview_message(
         self, server=None, target_stream=None, data=None, parent_header={}
     ):
         try:
 
-            preview = await self.context.evaluate(self.get_code("model_preview"))
+            preview = await self.evaluate(self.get_code("model_preview"), {"var_name": self.var_name})
             content = preview["return"]
-            self.context.kernel.send_response(
+            self.beaker_kernel.send_response(
                 "iopub", "model_preview", content, parent_header=parent_header
             )
         except Exception as e:
@@ -266,7 +139,7 @@ No addtional text is needed in the response, just the code block.
         new_name = content.get("name")
 
         new_model: dict = (
-            await self.context.evaluate(
+            await self.evaluate(
                 f"template_model_to_petrinet_json({self.var_name})"
             )
         )["return"]
@@ -300,7 +173,7 @@ No addtional text is needed in the response, just the code block.
         new_model_id = create_req.json()["id"]
 
         content = {"model_id": new_model_id}
-        self.context.kernel.send_response(
+        self.beaker_kernel.send_response(
             "iopub", "save_model_response", content, parent_header=message.header
         )
 
@@ -314,7 +187,7 @@ No addtional text is needed in the response, just the code block.
         if stratify_args is None:
             # Error
             logger.error("stratify_args must be set on stratify requests.")
-            self.context.kernel.send_response(
+            self.beaker_kernel.send_response(
                 "iopub", "error", {
                     "ename": "ValueError",
                     "evalue": "stratify_args must be set on stratify requests",
@@ -326,14 +199,14 @@ No addtional text is needed in the response, just the code block.
             "var_name": model_name,
             "stratify_kwargs": repr(stratify_args),
         })
-        stratify_result = await self.context.execute(stratify_code)
+        stratify_result = await self.execute(stratify_code)
 
         content = {
             "success": True,
             "executed_code": stratify_result["parent"].content["code"],
         }
 
-        self.context.kernel.send_response(
+        self.beaker_kernel.send_response(
             "iopub", "stratify_response", content, parent_header=message.header
         )
         await self.send_mira_preview_message(parent_header=message.header)
@@ -347,14 +220,14 @@ No addtional text is needed in the response, just the code block.
         reset_code = self.get_code("reset", {
             "var_name": model_name,
         })
-        reset_result = await self.context.execute(reset_code)
+        reset_result = await self.execute(reset_code)
 
         content = {
             "success": True,
             "executed_code": reset_result["parent"].content["code"],
         }
 
-        self.context.kernel.send_response(
+        self.beaker_kernel.send_response(
             "iopub", "reset_response", content, parent_header=message.header
         )
         await self.send_mira_preview_message(parent_header=message.header)

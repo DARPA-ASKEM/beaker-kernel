@@ -7,25 +7,35 @@ import os
 import requests
 import sys
 import traceback
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 
 from tornado import ioloop
 
-from lib.jupyter_kernel_proxy import (
+from .lib.jupyter_kernel_proxy import (
     KernelProxyManager,
     JupyterMessage,
     InterceptionFilter,
     KERNEL_SOCKETS,
     KERNEL_SOCKETS_NAMES,
 )
-from contexts.contexts import Context
-from contexts.subkernels.base import BaseSubkernel
-from contexts.subkernels.python import PythonSubkernel
-from contexts.subkernels.julia import JuliaSubkernel
-from contexts.subkernels.rlang import RSubkernel
-from contexts.toolsets import DatasetToolset, MiraModelToolset
-from contexts.toolsets.decapode_creation_toolset import DecapodesCreationToolset
 
+from .lib.context import BaseContext
+
+# TODO: Move to autodiscovery
+from .lib.subkernels.python import PythonSubkernel
+from .lib.subkernels.julia import JuliaSubkernel
+from .lib.subkernels.rlang import RSubkernel
+
+# TODO: Move to autodiscovery
+from .lib.context import collect_contexts
+from .contexts.pypackage.context import PyPackageContext
+from .contexts.dataset.context import DatasetContext
+from .contexts.mira_model.context import MiraModelContext
+from .contexts.decapodes.context import DecapodesContext
+
+if TYPE_CHECKING:
+    from .lib.agent import BaseAgent
+    from .lib.subkernels.base import BaseSubkernel
 
 logger = logging.getLogger(__name__)
 
@@ -42,10 +52,11 @@ MESSAGE_STREAMS = {
 }
 
 
-AVAILABLE_TOOLSETS = {
-    "dataset": DatasetToolset,
-    "mira_model": MiraModelToolset,
-    "decapodes_creation": DecapodesCreationToolset,
+AVAILABLE_CONTEXTS = {
+    DatasetContext.slug: DatasetContext,
+    DecapodesContext.slug: DecapodesContext,
+    MiraModelContext.slug: MiraModelContext,
+    PyPackageContext.slug: PyPackageContext,
 }
 
 
@@ -55,9 +66,9 @@ def get_socket(stream_name: str):
 
 
 class LLMKernel(KernelProxyManager):
-    implementation = "askem-chatty-py"
+    implementation = "askem-beaker"
     implementation_version = "0.1"
-    banner = "Chatty ASKEM"
+    banner = "Beaker Kernel"
 
     language_info = {
         "mimetype": "text/plain",
@@ -65,19 +76,20 @@ class LLMKernel(KernelProxyManager):
         "file_extension": ".txt",
     }
 
-    context: Optional[Context]
+    context: Optional[BaseContext]
     internal_executions: set[str]
-    subkernel: BaseSubkernel
+    subkernel: "BaseSubkernel"
     subkernel_execution_tracking: dict[str, str]
 
     def __init__(self, server):
         self.internal_executions = set()
         self.subkernel_execution_tracking = {}
         self.subkernel_id = None
-        self.context = None
+        # self.context = None
         super().__init__(server)
         # We need to have a kernel when we start up, even though we can/will change the kernel/language when we set context
         self.new_kernel(language="python3")
+        self.context = PyPackageContext(beaker_kernel=self, subkernel=self.subkernel, config={})
         self.add_intercepts()
 
     def add_intercepts(self):
@@ -308,14 +320,15 @@ class LLMKernel(KernelProxyManager):
             logger.info("Subkernel changed: %s != %s", getattr(self.subkernel, "KERNEL_NAME", "unknown"), language)
             self.new_kernel(language=language)
 
-        toolset_class = AVAILABLE_TOOLSETS.get(context_name, None)
-        if not toolset_class:
+        context_cls = AVAILABLE_CONTEXTS.get(context_name, None)
+        if not context_cls:
             # TODO: Should we return an error if the requested toolset isn't available?
             return False
 
         # Create and setup context
-        self.context = Context(kernel=self, subkernel=self.subkernel, toolset_cls=toolset_class, config=context_info)
-        await self.context.setup(parent_header=parent_header)
+        # self.context = BaseContext(beaker_kernel=self, subkernel=self.subkernel, agent_cls=toolset_class, config=context_info)
+        self.context = context_cls(beaker_kernel=self, subkernel=self.subkernel, config=context_info)
+        await self.context.setup(config=context_info, parent_header=parent_header)
 
     async def post_execute(self, queue, message_id, data):
         message = JupyterMessage.parse(data)
@@ -327,7 +340,7 @@ class LLMKernel(KernelProxyManager):
 
         # Fetch event loop and ensure it's valid
         loop = asyncio.get_event_loop()
-        callback = getattr(self.context.toolset, "post_execute", None)
+        callback = getattr(self.context, "post_execute", None)
         if loop and callback and (callable(callback) or inspect.iscoroutinefunction(callback)):
             # If we have a callback function, then add it as a task to the execution loop so it runs
             loop.create_task(callback(message))

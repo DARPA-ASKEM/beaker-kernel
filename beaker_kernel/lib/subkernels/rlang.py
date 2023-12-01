@@ -10,10 +10,11 @@ logger = logging.getLogger(__name__)
 
 
 class RSubkernel(BaseSubkernel):
-    DISPLAY_NAME = "r"
+    DISPLAY_NAME = "R"
+    SLUG = "rlang"
     KERNEL_NAME = "ir"
     DATAFRAME_TYPE_NAME = "data.frame"
-    
+
     @classmethod
     def parse_subkernel_return(cls, execution_result) -> Any:
         # irkernel annoyingly does not return the last item in the code execution as the "return" item, so we print the response as part of the output

@@ -1,55 +1,36 @@
-import codecs
-import copy
-import datetime
-import json
-import logging
 import os
-import re
 import requests
-import tempfile
-from functools import partial
-from typing import Optional, Callable, List, Tuple, Any
+from typing import Any, Dict, TYPE_CHECKING
 
-from archytas.tool_utils import tool, toolset, AgentRef, LoopControllerRef
+from beaker_kernel.lib.context import BaseContext
 
-from .base import BaseToolset
-from lib.jupyter_kernel_proxy import JupyterMessage
+from .agent import DatasetAgent
 
-
-logging.disable(logging.WARNING)  # Disable warnings
-logger = logging.Logger(__name__)
+if TYPE_CHECKING:
+    from beaker_kernel.lib.agent import BaseAgent
+    from beaker_kernel.kernel import LLMKernel
+    from beaker_kernel.lib.subkernels.base import BaseSubkernel
 
 
-@toolset()
-class DatasetToolset(BaseToolset):
-    """ """
+class DatasetContext(BaseContext):
 
-    dataset_map: Optional[dict[str, dict[str, Any]]]
+    slug: str = "dataset"
+    agent_cls: "BaseAgent" = DatasetAgent
 
-    # {
-    #   "df": {"id": 12345, "filename": "dataset.csv"},
-    #   "df2": {"id": 54321}
-    #   "df_map": {"id": 12345, "filename": "mappings.csv"},
-    # }
+    def __init__(self, beaker_kernel: "LLMKernel", subkernel: "BaseSubkernel", config: Dict[str, Any]) -> None:
 
-    def __init__(self, context, *args, **kwargs):
-        super().__init__(context=context, *args, **kwargs)
         self.dataset_map = {}
         self.intercepts = {
             "download_dataset_request": (self.download_dataset_request, "shell"),
             "save_dataset_request": (self.save_dataset_request, "shell"),
         }
-        self.reset()
+
+        super().__init__(beaker_kernel, subkernel, self.agent_cls, config)
 
     async def setup(self, config, parent_header):
-        # DEPRECATED: Backwards compatible handling of "old style" single id contexts
-        if len(config) == 1 and "id" in config:
-            dataset_id = config["id"]
-            print(f"Processing dataset w/id {dataset_id}")
-            await self.set_dataset(dataset_id, parent_header=parent_header)
-        else:
-            print(f"Processing datasets w/ids {', '.join(config.values())}")
-            await self.set_datasets(config, parent_header=parent_header)
+        self.config = config
+        print(f"Processing datasets w/ids {', '.join(self.config.values())}")
+        await self.set_datasets(self.config, parent_header=parent_header)
 
     async def post_execute(self, message):
         await self.update_dataset_map(parent_header=message.parent_header)
@@ -99,7 +80,7 @@ class DatasetToolset(BaseToolset):
                 self.get_code("load_df", {"var_map": var_map}),
             ]
         )
-        await self.context.execute(command)
+        await self.execute(command)
         await self.update_dataset_map()
 
     def reset(self):
@@ -116,14 +97,14 @@ class DatasetToolset(BaseToolset):
             }
             for var_name, df in self.dataset_map.items()
         }
-        self.context.kernel.send_response(
+        self.beaker_kernel.send_response(
             "iopub", "dataset", preview, parent_header=parent_header
         )
         return data
 
     async def update_dataset_map(self, parent_header={}):
         code = self.get_code("df_info")
-        df_info_response = await self.context.kernel.evaluate(
+        df_info_response = await self.beaker_kernel.evaluate(
             code,
             parent_header=parent_header,
         )
@@ -200,57 +181,6 @@ Statistics:
 """
         return output
 
-    @tool()
-    async def generate_code(
-        self, query: str, agent: AgentRef, loop: LoopControllerRef
-    ) -> None:
-        """
-        Generated  code to be run in an interactive Jupyter notebook for the purpose of exploring, modifying and visualizing a Dataframe.
-
-        Input is a full grammatically correct question about or request for an action to be performed on the loaded dataframe.
-
-        Args:
-            query (str): A fully grammatically correct question about the current dataset.
-
-        """
-        # set up the agent
-        # str: Valid and correct python code that fulfills the user's request.
-        var_sections = []
-        for var_name, dataset_obj in self.dataset_map.items():
-            df_info = await self.describe_dataset(var_name)
-            var_sections.append(f"""
-You have access to a variable name `{var_name}` that is a {self.metadata.get("df_lib_name", "Pandas")} Dataframe with the following structure:
-{df_info}
---- End description of variable `{var_name}`
-""")
-        prompt = f"""
-You are a programmer writing code to help with scientific data analysis and manipulation in {self.metadata.get("name", "a Jupyter notebook")}.
-
-Please write code that satisfies the user's request below.
-
-{"".join(var_sections)}
-
-If you are asked to modify or update the dataframe, modify the dataframe in place, keeping the updated variable the same unless specifically specified otherwise.
-
-You also have access to the libraries {self.metadata.get("libraries", "that are common for these tasks")}.
-
-Please generate the code as if you were programming inside a Jupyter Notebook and the code is to be executed inside a cell.
-You MUST wrap the code with a line containing three backticks (```) before and after the generated code.
-No addtional text is needed in the response, just the code block.
-"""
-
-        llm_response = await agent.oneshot(prompt=prompt, query=query)
-        loop.set_state(loop.STOP_SUCCESS)
-        preamble, code, coda = re.split("```\w*", llm_response)
-        result = json.dumps(
-            {
-                "action": "code_cell",
-                "language": self.context.lang,
-                "content": code.strip(),
-            }
-        )
-        return result
-
     async def download_dataset_request(self, queue, message_id, data):
         message = JupyterMessage.parse(data)
         content = message.content
@@ -260,9 +190,9 @@ No addtional text is needed in the response, just the code block.
         # TODO: This doesn't work very well. Is very slow to encode, and transfer all of the required messages multiple times proxies through the proxy kernel.
         # We should find a better way to accomplish this if it's needed.
         code = self.get_code("df_download", {"var_name": var_name})
-        df_response = await self.context.evaluate(code)
+        df_response = await self.evaluate(code)
         df_contents = df_response.get("stdout_list")
-        self.context.kernel.send_response(
+        self.beaker_kernel.send_response(
             "iopub",
             "download_response",
             {
@@ -297,12 +227,12 @@ No addtional text is needed in the response, just the code block.
             }
         )
 
-        df_response = await self.context.evaluate(code)
+        df_response = await self.evaluate(code)
 
         if df_response:
             new_dataset_id = df_response.get("return", {}).get("dataset_id", None)
             if new_dataset_id:
-                self.context.kernel.send_response(
+                self.beaker_kernel.send_response(
                     "iopub",
                     "save_dataset_response",
                     {

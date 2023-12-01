@@ -10,13 +10,13 @@ import requests
 import tempfile
 from typing import Optional, Callable, List, Tuple, Dict, Any, TYPE_CHECKING
 
-from ..codesets import get_metadata, get_template
-from lib.jupyter_kernel_proxy import JupyterMessage
+from .codeset import get_metadata, get_template
+from .jupyter_kernel_proxy import JupyterMessage
 from archytas.tool_utils import tool, toolset, AgentRef, LoopControllerRef
 
 if TYPE_CHECKING:
-    from beaker.kernel import LLMKernel
-    from contexts.contexts import Context
+    from beaker_kernel.kernel import LLMKernel
+    from beaker_kernel.lib.context import BaseContext
 
 logging.disable(logging.WARNING)  # Disable warnings
 logger = logging.Logger(__name__)
@@ -29,9 +29,9 @@ class BaseToolset:
     toolset_name: str
     codeset_name: str
     intercepts: dict[str, tuple[Callable, str]]
-    context: Context
+    context: BaseContext
 
-    def __init__(self, context: Context, *args, **kwargs):
+    def __init__(self, context: BaseContext, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.context = context
         if not getattr(self, 'toolset_name', None):

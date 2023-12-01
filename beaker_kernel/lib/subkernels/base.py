@@ -1,10 +1,11 @@
 import abc
 from typing import Dict, Any
-from ..codesets import get_template
+from beaker_kernel.lib.codeset import get_template
 
 
 class BaseSubkernel(abc.ABC):
     DISPLAY_NAME: str
+    SLUG: str
     KERNEL_NAME: str
     DATAFRAME_TYPE_NAME: str
 
