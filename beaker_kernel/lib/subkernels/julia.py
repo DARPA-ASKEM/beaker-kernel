@@ -12,7 +12,6 @@ class JuliaSubkernel(BaseSubkernel):
     DISPLAY_NAME = "Julia"
     SLUG = "julia"
     KERNEL_NAME = "julia-1.9"
-    DATAFRAME_TYPE_NAME = "DataFrames"
 
     @classmethod
     def parse_subkernel_return(cls, execution_result) -> Any:

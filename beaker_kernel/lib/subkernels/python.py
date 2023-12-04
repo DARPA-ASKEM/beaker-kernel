@@ -8,8 +8,6 @@ class PythonSubkernel(BaseSubkernel):
     DISPLAY_NAME = "Python 3"
     SLUG = "python3"
     KERNEL_NAME = "python3"
-    DATAFRAME_TYPE_NAME = "pandas"
-
 
     @classmethod
     def parse_subkernel_return(cls, execution_result) -> Any:
