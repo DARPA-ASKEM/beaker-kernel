@@ -11,19 +11,12 @@ from typing import TYPE_CHECKING, Optional
 import requests
 from tornado import ioloop
 
-# TODO: Move context import to autodiscovery
-from .contexts.dataset.context import DatasetContext
-from .contexts.decapodes.context import DecapodesContext
-from .contexts.mira_model.context import MiraModelContext
 from .contexts.pypackage.context import PyPackageContext
-from .lib.context import BaseContext, collect_contexts
+from .lib.context import BaseContext, autodiscover_contexts
 from .lib.jupyter_kernel_proxy import (KERNEL_SOCKETS, KERNEL_SOCKETS_NAMES,
                                        InterceptionFilter, JupyterMessage,
                                        KernelProxyManager)
-# TODO: Move subkernel import to autodiscovery
-from .lib.subkernels.julia import JuliaSubkernel
-from .lib.subkernels.python import PythonSubkernel
-from .lib.subkernels.rlang import RSubkernel
+from .lib.subkernels import autodiscover_subkernels
 from .lib.utils import message_handler
 
 if TYPE_CHECKING:
@@ -44,14 +37,8 @@ MESSAGE_STREAMS = {
     "stream": "iopub",
 }
 
-
-AVAILABLE_CONTEXTS = {
-    DatasetContext.slug: DatasetContext,
-    DecapodesContext.slug: DecapodesContext,
-    MiraModelContext.slug: MiraModelContext,
-    PyPackageContext.slug: PyPackageContext,
-}
-
+AVAILABLE_CONTEXTS = autodiscover_contexts()
+AVAILABLE_SUBKERNELS = autodiscover_subkernels()
 
 def get_socket(stream_name: str):
     socket = KERNEL_SOCKETS[KERNEL_SOCKETS_NAMES.index(stream_name)]
@@ -102,9 +89,8 @@ class LLMKernel(KernelProxyManager):
     def new_kernel(self, language: str):
         # Shutdown any existing subkernel (if it exists) before spinnup up a new kernel
         kernel_opts = {
-            "python3": PythonSubkernel,
-            "julia-1.9": JuliaSubkernel,
-            "ir": RSubkernel,
+            subkernel.KERNEL_NAME: subkernel
+            for subkernel in AVAILABLE_SUBKERNELS.values()
         }
 
         self.shutdown_subkernel()

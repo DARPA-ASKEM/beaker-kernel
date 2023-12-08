@@ -4,6 +4,8 @@ import logging
 import os.path
 from typing import TYPE_CHECKING, Any, Dict, Optional
 
+from beaker_kernel.lib.autodiscovery import autodiscover
+
 from jinja2 import Environment, FileSystemLoader, Template, select_autoescape
 
 if TYPE_CHECKING:
@@ -18,7 +20,6 @@ logger = logging.getLogger(__name__)
 
 
 class BaseContext:
-    slug: str
     beaker_kernel: "LLMKernel"
     subkernel: "BaseSubkernel"
     config: Dict[str, Any]
@@ -67,6 +68,18 @@ class BaseContext:
         return self.beaker_kernel.send_response(*args, **kwargs)
 
     @property
+    def slug(self) -> Optional[str]:
+        """
+        The slug should always be the same as the package that contains the class.
+        I.e. For "beaker_kernel.contexts.pypackage" the slug should be "pypackage"
+        """
+        package_str = inspect.getmodule(self).__package__
+        if package_str:
+            return package_str.split(".")[-1]
+        else:
+            return None
+
+    @property
     def lang(self):
         return self.subkernel.KERNEL_NAME
 
@@ -94,6 +107,5 @@ class BaseContext:
     async def evaluate(self, expression, parent_header={}):
         return await self.beaker_kernel.evaluate(expression, parent_header)
 
-
-def collect_contexts(path):
-    return []
+def autodiscover_contexts():
+    return autodiscover("contexts")

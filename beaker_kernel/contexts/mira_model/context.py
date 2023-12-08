@@ -21,7 +21,6 @@ logger = logging.getLogger(__name__)
 
 class MiraModelContext(BaseContext):
 
-    slug = "mira_model"
     agent_cls = MiraModelAgent
 
     model_id: Optional[str]

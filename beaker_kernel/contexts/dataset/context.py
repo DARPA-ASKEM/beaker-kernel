@@ -16,7 +16,6 @@ if TYPE_CHECKING:
 
 class DatasetContext(BaseContext):
 
-    slug: str = "dataset"
     agent_cls: "BaseAgent" = DatasetAgent
 
     def __init__(self, beaker_kernel: "LLMKernel", subkernel: "BaseSubkernel", config: Dict[str, Any]) -> None:

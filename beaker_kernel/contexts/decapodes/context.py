@@ -20,7 +20,6 @@ logger = logging.getLogger(__name__)
 
 class DecapodesContext(BaseContext):
 
-    slug = "decapodes"
     agent_cls = DecapodesAgent
 
     def __init__(self, beaker_kernel: "LLMKernel", subkernel: "BaseSubkernel", config: Dict[str, Any]) -> None:
