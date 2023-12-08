@@ -36,7 +36,7 @@ class CustomHook(BuildHookInterface):
             for fpath in os.listdir(context_src):
                 if fpath.startswith("_"):
                     continue
-                package_name = f"beaker_kernel.contexts.{fpath}"
+                package_name = f"beaker_kernel.contexts.{fpath}.context"
                 slug = fpath
                 full_path = os.path.join(context_src, fpath, "context.py")
                 with open(full_path) as f:
