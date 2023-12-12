@@ -85,7 +85,11 @@ The subkernel files within the context directory are required to define some com
 
 ## Install / setup
 
-### beaker_kernel Python module
+### Docker
+
+
+
+### python (local)
 
 Normal installation:
 ```bash
@@ -98,20 +102,6 @@ Global installation (e.g. Docker):
 $ poetry config virtualenvs.create false
 $ poetry install --no-dev
 ```
-
-### Jupyter kernel
-
-To install the kernel, simply copy or symlink the `beaker` directory in to one of the directories defined in the following document:
-
-https://jupyter-client.readthedocs.io/en/stable/kernels.html#kernel-specs
-
-
-For example:
-```bash
-$ cp -r beaker /usr/share/jupyter/kernels/beaker
-```
-
-Once the directory exists and the jupyter service is restarted the kernel should be available for selection.
 
 For development, the kernel is automatically installed in the proper location in your development virtual environment when you run `make dev-install` as explained in the Dev setup section.
 
@@ -160,14 +150,3 @@ are:
     1. allow_orgin rule
     2. disable_check_xsrf security issue to allow the proxy
     kernel to make API calls
-
-The main engineering on the back end goes in to the writing of
-the LLM/Proxy kernel.
-
-This custom kernel manages a "sub-kernel" that can be for any
-language, etc as long as it is a good kernel and installed. The
-proxy passes messages from the client/jupyter server back and
-forth with the sub-kernel, but sometimes intercepts the
-messages or performs extra messages. This message interception
-allows for the client to request LLM queries and to generate
-code cells back to the client based on the LLM response.
