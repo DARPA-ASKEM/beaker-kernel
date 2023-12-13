@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any, Dict
 import requests
 
 from beaker_kernel.lib.context import BaseContext
-from beaker_kernel.lib.jupyter_kernel_proxy import JupyterMessage
+from beaker_kernel.lib.utils import intercept
 
 from .agent import OceananigansAgent
 
@@ -25,9 +25,6 @@ class OceananigansContext(BaseContext):
 
     def __init__(self, beaker_kernel: "LLMKernel", subkernel: "BaseSubkernel", config: Dict[str, Any]) -> None:
         self.target = "oceananigan"
-        self.intercepts = {
-            "save_data_request": (self.save_data, "shell"),
-        }
         self.reset()
         super().__init__(beaker_kernel, subkernel, self.agent_cls, config)
 
@@ -64,8 +61,9 @@ not to redefine existing variables or redo a task the user has already done (unl
         return  var_info_response.get('return')
 
 
-    async def save_data(self, server, target_stream, data):
-        message = JupyterMessage.parse(data)
+
+    @intercept(msg_type="save_data_request") 
+    async def save_data(self, message):
         content = message.content
 
         result = await self.evaluate(
