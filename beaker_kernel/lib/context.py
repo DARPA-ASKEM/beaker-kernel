@@ -133,6 +133,8 @@ class BaseContext:
     @intercept(stream="shell")
     async def input_reply(self, message):
         content = message.content
+        if self.agent.current_user_response is not None:
+            raise Exception("Multiple user response sent")
         self.agent.current_user_response = content["value"]
 
 def autodiscover_contexts():
