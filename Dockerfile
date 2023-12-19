@@ -37,6 +37,7 @@ RUN pip install -e .
 
 # Install Mira from `hackathon` branch
 RUN git clone https://github.com/indralab/mira.git /mira && \
+    pip install tabulate && \
     pip install /mira/"[ode,tests,dkg-client,sbml]" && \
     rm -r /mira
 
@@ -47,7 +48,7 @@ COPY beaker_kernel/kernel.json /usr/local/share/jupyter/kernels/beaker_kernel/ke
 # Copy src code over
 COPY --chown=1000:1000 . /jupyter
 RUN chown -R 1000:1000 /jupyter
-RUN pip install .
+RUN pip install . ./archytas
 
 # Switch to non-root user. It is crucial for security reasons to not run jupyter as root user!
 USER jupyter
