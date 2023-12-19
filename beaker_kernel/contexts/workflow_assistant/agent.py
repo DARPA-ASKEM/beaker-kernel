@@ -4,17 +4,12 @@ import re
 import requests
 import uuid
 from datetime import datetime
-import os
-import re
 import time
 
-from archytas.react import Undefined
-from archytas.tool_utils import AgentRef, LoopControllerRef, tool, toolset
+from archytas.tool_utils import  tool, toolset
 
 from beaker_kernel.lib.agent import BaseAgent
 from beaker_kernel.lib.context import BaseContext
-from beaker_kernel.lib.jupyter_kernel_proxy import JupyterMessage
-from beaker_kernel.lib.toolset import BaseToolset
 
 logging.disable(logging.WARNING)  # Disable warnings
 logger = logging.Logger(__name__)
@@ -938,5 +933,4 @@ class WorkflowAssistantAgent(BaseAgent):
     def __init__(self, context: BaseContext = None, tools: list = None, **kwargs):
         tools = [TDSToolset(context.workflow_id,context.project_id,context.TDS_URL,context.PYCIEMSS_URL,context.SCIML_URL)]
         super().__init__(context, tools, **kwargs)
-        self.model='gpt-4'#'gpt-4-1106-preview'
         print(self.tools)
