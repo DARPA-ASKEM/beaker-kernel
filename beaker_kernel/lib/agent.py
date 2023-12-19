@@ -2,7 +2,7 @@ import json
 import logging
 import re
 import typing
-from time import sleep
+from asyncio import sleep
 
 from archytas.react import ReActAgent, Undefined
 from archytas.tool_utils import AgentRef, LoopControllerRef, tool
@@ -66,7 +66,7 @@ class BaseAgent(ReActAgent):
             if self.current_user_response is not None:
                 self._is_awaiting_user_response = False
                 return self.current_user_response
-            sleep(1)
+            await sleep(1)
 
         self._is_awaiting_user_response = False
         raise Exception("Query timed out. User took too long to respond.")

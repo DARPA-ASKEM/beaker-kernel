@@ -132,7 +132,6 @@ class BaseContext:
 
     @intercept(stream="shell")
     async def input_reply(self, message):
-        raise Exception("MADE IT")
         content = message.content
         self.agent.current_user_response = content["value"]
 
