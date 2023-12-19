@@ -5,6 +5,7 @@ import os.path
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 from beaker_kernel.lib.autodiscovery import autodiscover
+from beaker_kernel.lib.utils import intercept
 
 from jinja2 import Environment, FileSystemLoader, Template, select_autoescape
 
@@ -128,6 +129,12 @@ class BaseContext:
 
     async def evaluate(self, expression, parent_header={}):
         return await self.beaker_kernel.evaluate(expression, parent_header)
+
+    @intercept(stream="shell")
+    async def input_reply(self, message):
+        raise Exception("MADE IT")
+        content = message.content
+        self.agent.current_user_response = content["value"]
 
 def autodiscover_contexts():
     return autodiscover("contexts")
