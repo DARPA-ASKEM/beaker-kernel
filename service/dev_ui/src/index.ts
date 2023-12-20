@@ -147,8 +147,8 @@ async function createApp(manager: ServiceManager.IManager): void {
     }
     else if (msg.msg_type === "input_request") {
       const prompt = msg.content.prompt;
-      const fprompt = `Question:<br/><span>${prompt}</span>`
-      notebook.model.cells.nbmodel.addCell({id: `${msg.id}-text`, cell_type: 'markdown', source: fprompt});
+      const response = window.prompt(prompt); 
+      sendCustomMessage("shell", "input_reply", {"value": response})
     }
     else if (msg.msg_type === "llm_response") {
       const text = msg.content.text;
