@@ -145,6 +145,11 @@ async function createApp(manager: ServiceManager.IManager): void {
     if (msg.msg_type === "stream" && msg.parent_header?.msg_type == "llm_request") {
       notebook.model.cells.nbmodel.addCell({id: `${msg.id}-text`, cell_type: 'markdown', source: msg.content.text});
     }
+    else if (msg.msg_type === "input_request") {
+      const prompt = msg.content.prompt;
+      const fprompt = `Question:<br/><span>${prompt}</span>`
+      notebook.model.cells.nbmodel.addCell({id: `${msg.id}-text`, cell_type: 'markdown', source: fprompt});
+    }
     else if (msg.msg_type === "llm_response") {
       const text = msg.content.text;
       const colored_text = `Response:<br/><span style="color: blue">${text}</span>`
