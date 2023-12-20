@@ -138,8 +138,9 @@ async function createApp(manager: ServiceManager.IManager): void {
     });
   });
 
-  const handleMessage = (context, msg) => {
-    if (msg.msg_type === "status") {
+  const handleMessage = (_context, {msg, direction}) => {
+    const isValidChannel = true//msg.channel !== "iopub" || msg.channel !== "stdin"
+    if (msg.msg_type === "status" || direction !== "recv" || !isValidChannel) {
       return;
     }
     if (msg.msg_type === "stream" && msg.parent_header?.msg_type == "llm_request") {
@@ -148,7 +149,7 @@ async function createApp(manager: ServiceManager.IManager): void {
     else if (msg.msg_type === "input_request") {
       const prompt = msg.content.prompt;
       const response = window.prompt(prompt); 
-      sendCustomMessage("shell", "input_reply", {"value": response})
+      sendCustomMessage("stdin", "input_reply", {"prompt": prompt, "reply": response})
     }
     else if (msg.msg_type === "llm_response") {
       const text = msg.content.text;
@@ -185,7 +186,7 @@ async function createApp(manager: ServiceManager.IManager): void {
   void sessionContext.ready.then(() => {
     const session = sessionContext.session;
     // const kernel = session?.kernel;
-    session?.iopubMessage.connect(handleMessage);
+    session?.anyMessage.connect(handleMessage);
   });
 
   // Set the handler's editor.

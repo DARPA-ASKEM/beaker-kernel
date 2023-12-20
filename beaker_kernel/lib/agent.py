@@ -2,7 +2,6 @@ import json
 import logging
 import re
 import typing
-from asyncio import sleep
 
 from archytas.react import ReActAgent, Undefined
 from archytas.tool_utils import AgentRef, LoopControllerRef, tool
@@ -12,8 +11,6 @@ if typing.TYPE_CHECKING:
 
 
 logger = logging.getLogger(__name__)
-
-USER_RESPONSE_WAIT_TIME = 100
 
 class BaseAgent(ReActAgent):
 
@@ -26,8 +23,6 @@ class BaseAgent(ReActAgent):
         **kwargs,
     ):
         self.context = context
-        self.current_user_response = None
-        self._is_awaiting_user_response = False
 
         super().__init__(
             # model="gpt-4",  # Use default
@@ -52,25 +47,9 @@ class BaseAgent(ReActAgent):
             query (str): A fully grammatically correct question for the user.
 
         Returns:
-            str: User input
+            str: The user's response to the query.
         """
-        if self._is_awaiting_user_response:
-            raise Exception("Another user query is already in progress")
-
-        self._is_awaiting_user_response = True
-        self.current_user_response = None
-        self.context.beaker_kernel.send_response(
-            "iopub", "input_request", {"prompt": query}
-        )
-        for _ in range(USER_RESPONSE_WAIT_TIME):
-            if self.current_user_response is not None:
-                self._is_awaiting_user_response = False
-                return self.current_user_response
-            await sleep(1)
-
-        self._is_awaiting_user_response = False
-        raise Exception("Query timed out. User took too long to respond.")
-
+        return await self.context.beaker_kernel.prompt_user(query)
 
     @tool()
     async def generate_code(
