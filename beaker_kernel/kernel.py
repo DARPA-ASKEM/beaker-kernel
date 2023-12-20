@@ -365,7 +365,7 @@ class LLMKernel(KernelProxyManager):
 
     async def prompt_user(self, query):
         self.send_response(
-            "stdin", "input_request", {"prompt": query}
+            "iopub", "input_request", {"prompt": query}
         )
         for _ in range(USER_RESPONSE_WAIT_TIME):
             if query in self.user_responses:

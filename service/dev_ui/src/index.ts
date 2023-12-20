@@ -138,9 +138,8 @@ async function createApp(manager: ServiceManager.IManager): void {
     });
   });
 
-  const handleMessage = (_context, {msg, direction}) => {
-    const isValidChannel = true//msg.channel !== "iopub" || msg.channel !== "stdin"
-    if (msg.msg_type === "status" || direction !== "recv" || !isValidChannel) {
+  const handleMessage = (_context, msg) => {
+    if (msg.msg_type === "status") {
       return;
     }
     if (msg.msg_type === "stream" && msg.parent_header?.msg_type == "llm_request") {
@@ -186,7 +185,7 @@ async function createApp(manager: ServiceManager.IManager): void {
   void sessionContext.ready.then(() => {
     const session = sessionContext.session;
     // const kernel = session?.kernel;
-    session?.anyMessage.connect(handleMessage);
+    session?.iopubMessage.connect(handleMessage);
   });
 
   // Set the handler's editor.
