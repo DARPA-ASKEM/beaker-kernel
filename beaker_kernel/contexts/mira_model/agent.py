@@ -35,7 +35,7 @@ class MiraModelAgent(BaseAgent):
         Information about the dataframe can be loaded with the `model_structure` tool.
 
         Args:
-            query (str): A fully grammatically correct queistion about the current model.
+            query (str): A fully grammatically correct question about the current model.
         """
 
         prompt = f"""

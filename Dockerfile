@@ -33,11 +33,10 @@ RUN pip install --upgrade --no-cache-dir hatch pip
 # Install project requirements
 COPY --chown=1000:1000 pyproject.toml README.md hatch_build.py /jupyter/
 # Hack to install requirements without requiring the rest of the files
-RUN pip install -e .
+RUN pip install --upgrade -e .
 
 # Install Mira from `hackathon` branch
 RUN git clone https://github.com/indralab/mira.git /mira && \
-    pip install tabulate && \
     pip install /mira/"[ode,tests,dkg-client,sbml]" && \
     rm -r /mira
 
@@ -48,7 +47,7 @@ COPY beaker_kernel/kernel.json /usr/local/share/jupyter/kernels/beaker_kernel/ke
 # Copy src code over
 COPY --chown=1000:1000 . /jupyter
 RUN chown -R 1000:1000 /jupyter
-RUN pip install . ./archytas
+RUN pip install --upgrade .
 
 # Switch to non-root user. It is crucial for security reasons to not run jupyter as root user!
 USER jupyter

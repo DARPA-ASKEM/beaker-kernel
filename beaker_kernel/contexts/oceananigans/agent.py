@@ -30,7 +30,7 @@ class OceananigansAgent(BaseAgent):
         Input is a full grammatically correct question about or request for an action to be performed with the Julia language or Oceananigans.
 
         Args:
-            query (str): A fully grammatically correct queistion about the current model.
+            query (str): A fully grammatically correct question about the current model.
         """
         prompt = f"""
 You are a programmer writing code to help with writing simulations in Julia and Oceananigans.jl, a fast, friendly, flexible software package for finite volume simulations of the nonhydrostatic and hydrostatic Boussinesq equations on CPUs and GPUs.
