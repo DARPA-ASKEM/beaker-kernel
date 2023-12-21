@@ -364,6 +364,8 @@ class LLMKernel(KernelProxyManager):
         return data
 
     async def prompt_user(self, query):
+        if query in self.user_responses:
+                del self.user_responses[query]
         self.send_response(
             "iopub", "input_request", {"prompt": query}
         )
