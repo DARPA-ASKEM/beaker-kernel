@@ -108,22 +108,13 @@ For development, the kernel is automatically installed in the proper location in
 
 ## Dev setup
 
-This package is bundled with a basic development UI for development and testing.
-
-To get started run this command:
-
-```bash
-$ make dev-install
-```
-
-This will copy install all of the prerequisites.
-
+This package is bundled with a basic development UI for development and testing. This can be found at /dev_ui
 You will need to update the .env file with your OpenAI/GPT API key to use the LLM. To connect to the data service, you will need to update the .env file with the url of a running instance.
 
 Once you have set up the environment and added your keys you can start the dev server by running:
 
 ```bash
-$ make dev
+$ docker-compose up
 ```
 
 This will start the Jupyter service and launch a specialized notebook interface in your browser similar to if you ran `$ jupyter notebook` normally.
