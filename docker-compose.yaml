@@ -18,7 +18,9 @@ services:
       - JUPYTER_TOKEN=89f73481102c46c0bc13b2998f9a4fce
     env_file:
       - .env
-    command: ["python", "-m", "beaker_kernel.server.dev", "--ip", "0.0.0.0"]
+    volumes:
+      - ./src/askem_beaker:/home/jupyter/askem_beaker
+    command: ["python", "-m", "beaker_kernel.server.dev", "watch"]
 
   data-service:
     image: ghcr.io/darpa-askem/data-service:latest
