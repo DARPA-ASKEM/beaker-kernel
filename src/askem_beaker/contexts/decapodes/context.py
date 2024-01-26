@@ -9,6 +9,7 @@ from beaker_kernel.lib.context import BaseContext
 from beaker_kernel.lib.utils import intercept
 
 from .agent import DecapodesAgent
+from askem_beaker.utils import get_auth
 
 if TYPE_CHECKING:
     from beaker_kernel.kernel import LLMKernel
@@ -18,12 +19,14 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
+
 class DecapodesContext(BaseContext):
 
     agent_cls = DecapodesAgent
 
     def __init__(self, beaker_kernel: "LLMKernel", subkernel: "BaseSubkernel", config: Dict[str, Any]) -> None:
         self.target = "decapode"
+        self.auth = get_auth()
         self.reset()
         super().__init__(beaker_kernel, subkernel, self.agent_cls, config)
 
@@ -33,7 +36,7 @@ class DecapodesContext(BaseContext):
 
         def fetch_model(model_id):
             meta_url = f"{os.environ['DATA_SERVICE_URL']}/models/{model_id}"
-            response = requests.get(meta_url)
+            response = requests.get(meta_url, auth=self.auth.requests_auth())
             if response.status_code >= 300:
                 raise Exception(f"Failed to retrieve model {model_id} from server returning {response.status_code}")
             model = json.dumps(response.json()["model"])
@@ -212,7 +215,8 @@ If you are asked to manipulate, stratify, or visualize the model, use the genera
         }
 
         create_req = requests.post(
-            f"{os.environ['DATA_SERVICE_URL']}/models", json=amr
+            f"{os.environ['DATA_SERVICE_URL']}/models", json=amr,
+            auth=self.auth.requests_auth()
         )
         new_model_id = create_req.json()["id"]
 
