@@ -13,14 +13,12 @@ from beaker_kernel.lib.jupyter_kernel_proxy import JupyterMessage
 logging.disable(logging.WARNING)  # Disable warnings
 logger = logging.Logger(__name__)
 
-
+#    LLM agent used for configuring models which have been ingested via the model extraction pipeline.
+    # The model extraction pipeline provides model summary and description. Configuration variable details
+    # and functions for editing the config files and code to run the model.
+    # This will be used to find pre-written functions which will be used to edit a model.
 class ClimateModelConfigAgent(BaseAgent):
     """
-    LLM agent used for configuring models which have been ingested via the model extraction pipeline.
-    The model extraction pipeline provides model summary and description. Configuration variable details
-    and functions for editing the config files and code to run the model.
-    This will be used to find pre-written functions which will be used to edit a model.
-
     """
 
     def __init__(self, context: BaseContext = None, tools: list = None, **kwargs):
@@ -34,15 +32,7 @@ class ClimateModelConfigAgent(BaseAgent):
         No input is required to this tool.
         Only use this tool once you have configured the model and have confirmed with the user that the configuration is correct.
         
-
-            
-        Parameters
-        ----------
-        None
-    
-        Returns
-        -------
-        Confirmation of the model running successfully or summary of the model results or an error message if the model fails to run. (it may be configured improperly)
+        This tool returns confirmation of the model running successfully or summary of the model results or an error message if the model fails to run. (it may be configured improperly)
         
         """
         import subprocess
@@ -56,23 +46,20 @@ class ClimateModelConfigAgent(BaseAgent):
         return 'Model Running. It will probably be a while. Let the user know that the model is running and ask if there is anything else you can help with.'
     
     @tool()
-    def configure_model(self,configuration_variables:dict):
+    async def configure_model(self,configuration_variables:dict):
         """
         Use this tool to configure a model.
         The input to this tool should be a a dictionary of model variables to change as well as the values that they are to be changed to.
         The configuration will be updated based on the dictionary that you provide. The rest of the values will remain the same. 
         You DO NOT need to provide all of the variables in the model, just the ones you want to change.
         Values of the variables should match the type given in the model information given to you.
+        This tool returns confirmation of configuration being successfully changed or an error message describing any issues with the input you have given the model
+        
+        Args:
+            configuration_variables (dict): A dictionary of key value pairs representing names of variables to be changed and values to be changed to.
+                The dictionary should be in the format {{'variable_name':variable_value}}
         
         
-        Parameters
-        ----------
-        configuration_variables (dict): A dictionary of key value pairs representing names of variables to be changed and values to be changed to.
-            The dictionary should be in the format {{'variable_name':variable_value}}
-        
-        Returns
-        -------
-        Confirmation of configuration being successfully changed or an error message describing any issues with the input you have given the model
     
         """  
         self.context.config['config_text']=await self.use_generate_functions_to_modify_config(configuration_variables)
@@ -83,13 +70,10 @@ class ClimateModelConfigAgent(BaseAgent):
     
     async def use_generate_functions_to_modify_config(self,user_inputs):
         """
-        Parameters
-        ----------
-        user_inputs : dict
-            Dict with key value pairs of parameter names to change and values to change them to
+        Args:
+            user_inputs (dict): Dict with key value pairs of parameter names to change and values to change them to
 
-        Returns
-        -------
+        Returns:
         modified_config_text: The current agent's config text string modified by the information in the user input
 
         """

@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 demo_model_name='WRF'
-demo_model_description="""The em_b_wave model that the user is trying to run simulates 
-3-D baroclinic waves which includes by default a  
+demo_model_description="""3-D baroclinic waves which includes by default a  
 
  - Baroclinically unstable jet u(y,z) on an f-plane
  - Symmetric north and south, periodic east and west boundaries
