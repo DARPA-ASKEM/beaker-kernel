@@ -178,21 +178,21 @@ If you are asked to manipulate, stratify, or visualize the model, use the genera
 
 
     @intercept()
-    async def amr_2_templates(self, message):
+    async def amr_to_templates(self, message):
         content = message.content
         model_name = content.get("model_name", "model")
 
-        code = self.get_code("amr_test, {
+        code = self.get_code("amr_to_templates", {
             "var_name": model_name
         })
-        result = await self.execute(code)
+        result = (await self.evaluate(code))["return"]
 
         content = {
             "success": True,
-            "templates": result
+            "templates": result["templates"]
         }
         self.beaker_kernel.send_response(
-            "iopub", "amr_2_template_response", content, parent_header=message.header
+            "iopub", "amr_to_templates_response", content, parent_header=message.header
         )
 
 
