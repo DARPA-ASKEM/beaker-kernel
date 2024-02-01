@@ -1,17 +1,24 @@
 import codecs
+import copy
+import datetime
 import os
 import requests
+from base64 import b64encode
 from typing import TYPE_CHECKING, Any, Dict
 
 from beaker_kernel.lib.context import BaseContext
 from beaker_kernel.lib.utils import intercept
 
 from .agent import DatasetAgent
+from askem_beaker.utils import get_auth
 
 if TYPE_CHECKING:
     from beaker_kernel.kernel import LLMKernel
     from beaker_kernel.lib.agent import BaseAgent
     from beaker_kernel.lib.subkernels.base import BaseSubkernel
+
+import logging
+logger = logging.getLogger(__name__)
 
 
 class DatasetContext(BaseContext):
@@ -19,6 +26,7 @@ class DatasetContext(BaseContext):
     agent_cls: "BaseAgent" = DatasetAgent
 
     def __init__(self, beaker_kernel: "LLMKernel", subkernel: "BaseSubkernel", config: Dict[str, Any]) -> None:
+        self.auth = get_auth()
         self.dataset_map = {}
         super().__init__(beaker_kernel, subkernel, self.agent_cls, config)
 
@@ -42,7 +50,7 @@ class DatasetContext(BaseContext):
             else:
                 raise ValueError("Unable to parse dataset mapping")
             meta_url = f"{os.environ['DATA_SERVICE_URL']}/datasets/{dataset_id}"
-            dataset_info_req = requests.get(meta_url)
+            dataset_info_req = requests.get(meta_url, auth=self.auth.requests_auth())
             if dataset_info_req.status_code == 404:
                 raise Exception(f"Dataset '{dataset_id}' not found.")
             dataset_info = dataset_info_req.json()
@@ -64,15 +72,19 @@ class DatasetContext(BaseContext):
     async def load_dataframes(self):
         var_map = {}
         for var_name, df_obj in self.dataset_map.items():
-            filename = df_obj["info"].get("file_names", [])[0]
+            filename = df_obj["info"].get("fileNames", [])[0]
             meta_url = f"{os.environ['DATA_SERVICE_URL']}/datasets/{df_obj['id']}"
-            data_url_req = requests.get(f"{meta_url}/download-url?filename={filename}")
+            url = f"{meta_url}/download-url?filename={filename}"
+            data_url_req = requests.get(
+                url=url,
+                auth=self.auth.requests_auth(),
+            )
             data_url = data_url_req.json().get("url", None)
             var_map[var_name] = data_url
         command = "\n".join(
             [
                 self.get_code("setup"),
-                self.get_code("load_df", {"var_map": var_map}),
+                self.get_code("load_df", {"var_map": var_map, "auth": self.auth}),
             ]
         )
         await self.execute(command)
@@ -211,28 +223,44 @@ Statistics:
         if filename is None:
             filename = "dataset.csv"
 
+        parent_url = f"{dataservice_url}/datasets/{parent_dataset_id}"
+        parent_dataset = requests.get(parent_url, auth=self.auth.requests_auth()).json()
+        if not parent_dataset:
+            raise Exception(f"Unable to locate parent dataset '{parent_dataset_id}'")
+
+        new_dataset = copy.deepcopy(parent_dataset)
+        del new_dataset["id"]
+        new_dataset["name"] = new_name
+        new_dataset["description"] += f"\\nTransformed from dataset '{parent_dataset['name']}' ({parent_dataset['id']}) at {datetime.datetime.utcnow().strftime('%c %Z')}"
+        new_dataset["fileNames"] = [filename]
+
+        import pprint
+        logger.error(f"new dataset: {pprint.pformat(new_dataset)}")
+        create_req = requests.post(f"{dataservice_url}/datasets", auth=self.auth.requests_auth(), json=new_dataset)
+        new_dataset_id = create_req.json()["id"]
+        logger.error(f"new dataset: {pprint.pformat(create_req.json())}")
+
+        new_dataset["id"] = new_dataset_id
+        new_dataset_url = f"{dataservice_url}/datasets/{new_dataset_id}"
+        data_url_req = requests.get(f"{new_dataset_url}/upload-url?filename={filename}", auth=self.auth.requests_auth())
+        data_url = data_url_req.json().get('url', None)
+
         code = self.get_code(
             "df_save_as",
             {
-                "parent_dataset_id": parent_dataset_id,
-                "new_name": new_name,
-                "filename": filename,
-                "dataservice_url": dataservice_url,
                 "var_name": var_name,
+                "data_url": data_url,
             }
         )
-
-        df_response = await self.evaluate(code)
+        df_response = await self.execute(code)
 
         if df_response:
-            new_dataset_id = df_response.get("return", {}).get("dataset_id", None)
-            if new_dataset_id:
-                self.beaker_kernel.send_response(
-                    "iopub",
-                    "save_dataset_response",
-                    {
-                        "dataset_id": new_dataset_id,
-                        "filename": filename,
-                        "parent_dataset_id": parent_dataset_id,
-                    },
-                )
+            self.beaker_kernel.send_response(
+                "iopub",
+                "save_dataset_response",
+                {
+                    "dataset_id": new_dataset_id,
+                    "filename": filename,
+                    "parent_dataset_id": parent_dataset_id,
+                },
+            )

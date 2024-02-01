@@ -11,6 +11,7 @@ from beaker_kernel.lib.context import BaseContext
 from beaker_kernel.lib.utils import intercept
 
 from .agent import MiraModelAgent
+from askem_beaker.utils import get_auth
 
 if TYPE_CHECKING:
     from beaker_kernel.kernel import LLMKernel
@@ -30,6 +31,7 @@ class MiraModelContext(BaseContext):
 
     def __init__(self, beaker_kernel: "LLMKernel", subkernel: "BaseSubkernel", config: Dict[str, Any]) -> None:
         self.reset()
+        self.auth = get_auth()
         super().__init__(beaker_kernel, subkernel, self.agent_cls, config)
 
     async def setup(self, config, parent_header):
@@ -49,11 +51,11 @@ class MiraModelContext(BaseContext):
             self.model_id = item_id
             self.config_id = "default"
             meta_url = f"{os.environ['DATA_SERVICE_URL']}/models/{self.model_id}"
-            self.amr = requests.get(meta_url).json()
+            self.amr = requests.get(meta_url, auth=self.auth.requests_auth()).json()
         elif item_type == "model_config":
             self.config_id = item_id
             meta_url = f"{os.environ['DATA_SERVICE_URL']}/model_configurations/{self.config_id}"
-            self.configuration = requests.get(meta_url).json()
+            self.configuration = requests.get(meta_url, auth=self.auth.requests_auth()).json()
             self.model_id = self.configuration.get("model_id")
             self.amr = self.configuration.get("configuration")
         self.original_amr = copy.deepcopy(self.amr)
@@ -71,6 +73,7 @@ class MiraModelContext(BaseContext):
                 self.get_code("load_model", {
                     "var_name": self.var_name,
                     "model_url": model_url,
+                    "auth_header": self.auth.auth_header(),
                 }),
             ]
         )
@@ -163,13 +166,33 @@ If you are asked to manipulate, stratify, or visualize the model, use the genera
                 ] += f"\nfrom base configuration '{self.configuration.get('name')}' ({self.configuration.get('id')})"
 
         create_req = requests.post(
-            f"{os.environ['DATA_SERVICE_URL']}/models", json=new_model
+            f"{os.environ['DATA_SERVICE_URL']}/models", json=new_model,
+            auth=self.auth.requests_auth(),
         )
         new_model_id = create_req.json()["id"]
 
         content = {"model_id": new_model_id}
         self.beaker_kernel.send_response(
             "iopub", "save_model_response", content, parent_header=message.header
+        )
+
+
+    @intercept()
+    async def amr_to_templates(self, message):
+        content = message.content
+        model_name = content.get("model_name", "model")
+
+        code = self.get_code("amr_to_templates", {
+            "var_name": model_name
+        })
+        result = (await self.evaluate(code))["return"]
+
+        content = {
+            "success": True,
+            "templates": result["templates"]
+        }
+        self.beaker_kernel.send_response(
+            "iopub", "amr_to_templates_response", content, parent_header=message.header
         )
 
 

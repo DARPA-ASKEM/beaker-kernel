@@ -33,6 +33,9 @@ RUN git clone https://github.com/indralab/mira.git /home/jupyter/mira && \
 
 # Install project requirements
 COPY --chown=1000:1000 pyproject.toml README.md hatch_build.py /home/jupyter/askem_beaker/
+RUN mkdir -p /home/jupyter/askem_beaker/src/askem_beaker && touch /home/jupyter/askem_beaker/src/askem_beaker/__init__.py
+RUN pip install --no-cache-dir --upgrade -e /home/jupyter/askem_beaker
+
 COPY --chown=1000:1000 . /home/jupyter/askem_beaker/
 
 # Installs the askem specific subkernels
