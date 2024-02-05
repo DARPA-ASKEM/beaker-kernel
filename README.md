@@ -6,6 +6,14 @@ In addition to an integrated notebook/coding environment for the scientific work
 
 To learn more about Beaker we encourage developers and users to check out its [comprehensive documentation](https://jataware.github.io/beaker-kernel/).
 
+## Quickstart
+
+Run `make .env` which will copy the `env.example` to `.env`. Make sure to update `.env` and to set your `OPENAI_API_KEY` in your environment (e.g. `export OPENAI_API_KEY=your_key_here`). Next, run `make build`.
+
+Now you're ready to run the stack with `make dev` which will run the development stack inside `docker-compose`.
+
+> **Note**: the developer stack is currently in a transition from `TDS` to `HMI-Server` and the `docker-compose.yaml` needs to be updated accordingly. As a workaround, you can set `.env`'s `HMI-Server` settings to point to a remote instance of `HMI-Server` (e.g. `staging`) and use the `docker-compose-remote` setup with `docker-compose -f docker-compose-remote.yaml up`.
+
 ## Contexts
 
 This repository contains several Beaker contexts that offer ASKEM specific functionalities and capabilities. Each has a specific use case or maps to a specific Terarium operator and may support specific custom messages for integration into the workbench. They are:
@@ -16,7 +24,7 @@ This repository contains several Beaker contexts that offer ASKEM specific funct
 4. `mira_model`
 5. `mira_model_edit`
 
-> Note: the default payload setup for each context can be found at `src/askem_beaker/contexts/{context_name}/default_payload.json` and can be referenced to see an example payload for instantiating the context.
+> Note: the default payload setup for each context can be found at `src/askem_beaker/contexts/{context_name}/default_payload.json` and can be referenced to see an example payload for instantiating the context. The contexts that are in this repository but not listed above should not be considered supported and/or are experimental.
 
 ### `dataset` context
 
