@@ -18,11 +18,11 @@ Now you're ready to run the stack with `make dev` which will run the development
 
 This repository contains several Beaker contexts that offer ASKEM specific functionalities and capabilities. Each has a specific use case or maps to a specific Terarium operator and may support specific custom messages for integration into the workbench. They are:
 
-1. `dataset`
-2. `decapodes`
-3. `mira_config_edit`
-4. `mira_model`
-5. `mira_model_edit`
+1. [`dataset`](#dataset-context)
+2. [`decapodes`](#decapodes-context)
+3. [`mira_config_edit`](#mira_config_edit-context)
+4. [`mira_model`](#mira_model-context)
+5. [`mira_model_edit`](#mira_model_edit-context)
 
 > Note: the default payload setup for each context can be found at `src/askem_beaker/contexts/{context_name}/default_payload.json` and can be referenced to see an example payload for instantiating the context. The contexts that are in this repository but not listed above should not be considered supported and/or are experimental.
 
