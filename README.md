@@ -4,7 +4,7 @@ This repo uses Jataware's [Beaker-Kernel](https://github.com/jataware/beaker-ker
 
 In addition to an integrated notebook/coding environment for the scientific workflow, ASKEM Beaker offers an AI assistant that can support scientitific tasks such as model stratification, regridding, etc. The AI assistant is powered by Jataware's [Archytas](https://github.com/jataware/archytas) framework, a custom implementation of the [ReAct framework](https://react-lm.github.io/). The AI assistant has contextual awareness of code creation and execution in the notebook and can support the Terarium user in generating code for difficult operations in the ASKEM frameworks (e.g. Mira, Decapodes, etc).
 
-To learn more about Beaker we encourage developers and users to check out its [comprehensive documentation](https://jataware.github.io/beaker-kernel/).
+To learn more about Beaker for Terarium we encourage developers and users to check out our [comprehensive documentation](https://darpa-askem.github.io/beaker-kernel/).
 
 ## Quickstart
 
