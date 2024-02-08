@@ -55,7 +55,7 @@ No addtional text is needed in the response, just the code block.
         result = json.dumps(
             {
                 "action": "code_cell",
-                "language": "julia-1.9",
+                "language": "julia-1.10",
                 "content": code.strip(),
             }
         )
