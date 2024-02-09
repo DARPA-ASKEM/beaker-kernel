@@ -21,7 +21,7 @@ def add_observable(model, new_id: str, new_name: str, new_expression: str):
     tm = model
     # Note that if an observable already exists with the given
     # key, it will be replaced
-    rate_law_sympy = mathml_to_expression(new_expression)
+    rate_law_sympy = sympy.parsing.sympy_parser.parse_expr(new_expression)
     new_observable = Observable(name=new_id, display_name=new_name,
                                 expression=rate_law_sympy)
     tm.observables[new_id] = new_observable
