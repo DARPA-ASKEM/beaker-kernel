@@ -70,7 +70,7 @@ No addtional text is needed in the response, just the code block.
         result = json.dumps(
             {
                 "action": "code_cell",
-                "language": "julia-1.10",
+                "language": self.context.subkernel.KERNEL_NAME,
                 "content": code.strip(),
             }
         )
