@@ -5,3 +5,4 @@ from mira.sources.amr import model_from_json; from mira.modeling.viz import Grap
 from mira.metamodel.template_model import Parameter, Distribution , Observable, \
     Initial, Concept, TemplateModel
 from mira.metamodel.io import mathml_to_expression
+from sympy.abc import _clash1, _clash2, _clash
