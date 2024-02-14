@@ -15,7 +15,7 @@ model = model.add_template(
     template = ControlledDegradation(
         subject = subject_concept,
         controller = controller_concept,
-        rate_law = sympy.parsing.sympy_parser.parse_expr("{{ template_expression }}"),
+        rate_law = sympy.parsing.sympy_parser.parse_expr("{{ template_expression }}", local_dict=_clash),
         name = "{{ template_name }}"
     ),
     parameter_mapping = parameters,
