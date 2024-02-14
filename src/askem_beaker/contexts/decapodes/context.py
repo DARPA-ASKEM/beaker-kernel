@@ -225,6 +225,25 @@ If you are asked to manipulate, stratify, or visualize the model, use the genera
         )
 
     @intercept()
+    async def model_to_equation(self, message):
+        content = message.content
+        model_name = content.get("model_name", self.target)
+
+        equation_code = self.get_code("model_to_equation", {
+            "var_name": model_name,
+        })
+        equationStr = (await self.evaluate(equation_code))["return"]
+
+        content = {
+            "success": True,
+            "equation": equationStr
+        }
+        self.beaker_kernel.send_response(
+            "iopub", "model_to_equation_response", content, parent_header=message.header
+        )
+
+
+    @intercept()
     async def reset_request(self, message):
         content = message.content
 
