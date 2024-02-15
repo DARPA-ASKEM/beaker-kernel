@@ -225,7 +225,7 @@ If you are asked to manipulate, stratify, or visualize the model, use the genera
         )
 
     @intercept()
-    async def model_to_equation(self, message):
+    async def model_to_equation_request(self, message):
         content = message.content
         model_name = content.get("model_name", self.target)
 

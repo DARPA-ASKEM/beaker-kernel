@@ -1,5 +1,3 @@
-using DiagrammaticEquations
-using DiagrammaticEquations.decapodes
 import DisplayAs
 
 input = {{ var_name|default("decapode") }}
