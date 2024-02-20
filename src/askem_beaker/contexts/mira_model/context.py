@@ -125,7 +125,7 @@ If you are asked to manipulate, stratify, or visualize the model, use the genera
     ):
         try:
 
-            preview = await self.evaluate(self.get_code("model_preview"), {"var_name": self.var_name})
+            preview = await self.evaluate(self.get_code("model_preview"), {"var_name": self.var_name, "schema_name": self.schema_name})
             content = preview["return"]
             self.beaker_kernel.send_response(
                 "iopub", "model_preview", content, parent_header=parent_header
