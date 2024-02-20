@@ -85,7 +85,7 @@ class MiraConfigEditContext(BaseContext):
         self, server=None, target_stream=None, data=None, parent_header={}
     ):
         try:
-            preview = await self.evaluate(self.get_code("model_preview"), {"var_name": self.var_name})
+            preview = await self.evaluate(self.get_code("model_preview"), {"var_name": self.var_name, "schema_name": self.schema_name})
             content = preview["return"]
             self.beaker_kernel.send_response(
                 "iopub", "model_preview", content, parent_header=parent_header
