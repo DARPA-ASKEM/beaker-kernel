@@ -36,9 +36,6 @@ class MiraConfigEditContext(BaseContext):
 
     def reset(self):
         pass
-
-    async def post_execute(self, message):
-        pass    
         
     async def setup(self, config, parent_header):
         logger.error(f"performing setup...")
@@ -49,6 +46,9 @@ class MiraConfigEditContext(BaseContext):
         await self.set_model_config(
             item_id, item_type, parent_header=parent_header
         )
+
+    async def post_execute(self, message):
+        await self.send_mira_preview_message(parent_header=message.parent_header)
 
     async def set_model_config(self, item_id, agent=None, parent_header={}):
         self.config_id = item_id
@@ -85,7 +85,6 @@ class MiraConfigEditContext(BaseContext):
         self, server=None, target_stream=None, data=None, parent_header={}
     ):
         try:
-
             preview = await self.evaluate(self.get_code("model_preview"), {"var_name": self.var_name})
             content = preview["return"]
             self.beaker_kernel.send_response(
