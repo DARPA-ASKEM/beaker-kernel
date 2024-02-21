@@ -27,53 +27,51 @@ class DatasetContext(BaseContext):
 
     def __init__(self, beaker_kernel: "LLMKernel", subkernel: "BaseSubkernel", config: Dict[str, Any]) -> None:
         self.auth = get_auth()
-        self.dataset_map = {}
+        self.asset_map = {}
         super().__init__(beaker_kernel, subkernel, self.agent_cls, config)
 
-    async def setup(self, config, parent_header):
+    async def setup(self, config: dict, parent_header):
         self.config = config
-        print(f"Processing datasets w/ids {', '.join(self.config.values())}")
-        await self.set_datasets(self.config, parent_header=parent_header)
+        await self.set_assets(self.config, parent_header=parent_header)
 
     async def post_execute(self, message):
         await self.update_dataset_map(parent_header=message.parent_header)
         await self.send_df_preview_message(parent_header=message.parent_header)
 
-    async def set_datasets(self, dataset_map, parent_header={}):
-        self.dataset_map = dataset_map
-        for var_name, dataset_map_item in dataset_map.items():
-            if isinstance(dataset_map_item, str):
-                dataset_id = dataset_map_item
-                self.dataset_map[var_name] = {"id": dataset_id}
-            elif isinstance(dataset_map_item, dict):
-                dataset_id = dataset_map_item["id"]
+    async def set_assets(self, assets, parent_header={}):
+        self.asset_map = assets
+        for var_name, asset_item in assets.items():
+            if isinstance(asset_item, str):
+                asset_id = asset_item
+                asset_type = "dataset"
+                self.asset_map[var_name] = {
+                    "id": asset_id,
+                    "asset_type": asset_type,
+                }
+            elif isinstance(asset_item, dict):
+                asset_id = asset_item["id"]
+                asset_type = asset_item.get("asset_type", "dataset")
             else:
                 raise ValueError("Unable to parse dataset mapping")
-            meta_url = f"{os.environ['HMI_SERVER_URL']}/datasets/{dataset_id}"
-            dataset_info_req = requests.get(meta_url, auth=self.auth.requests_auth())
-            if dataset_info_req.status_code == 404:
-                raise Exception(f"Dataset '{dataset_id}' not found.")
-            dataset_info = dataset_info_req.json()
-            if dataset_info:
-                self.dataset_map[var_name]["info"] = dataset_info
+
+            meta_url = f"{os.environ['HMI_SERVER_URL']}/{asset_type}s/{asset_id}"
+            asset_info_req = requests.get(meta_url, auth=self.auth.requests_auth())
+            if asset_info_req.status_code == 404:
+                raise Exception(f"Dataset '{asset_id}' not found.")
+            asset_info = asset_info_req.json()
+            if asset_info:
+                self.asset_map[var_name]["info"] = asset_info
             else:
-                raise Exception(f"Dataset '{dataset_id}' not able to be loaded.")
+                raise Exception(f"{asset_type.capitalize()} '{asset_id}' not able to be loaded.")
         await self.load_dataframes()
         await self.send_df_preview_message(parent_header=parent_header)
 
-    async def set_dataset(self, dataset_id, parent_header={}):
-        await self.set_datasets(
-            {
-                "df": {"id": dataset_id}
-            },
-            parent_header=parent_header
-        )
-
     async def load_dataframes(self):
         var_map = {}
-        for var_name, df_obj in self.dataset_map.items():
+        for var_name, df_obj in self.asset_map.items():
+            asset_type = df_obj.get("asset_type", "dataset")
             filename = df_obj["info"].get("fileNames", [])[0]
-            meta_url = f"{os.environ['HMI_SERVER_URL']}/datasets/{df_obj['id']}"
+            meta_url = f"{os.environ['HMI_SERVER_URL']}/{asset_type}s/{df_obj['id']}"
             url = f"{meta_url}/download-url?filename={filename}"
             data_url_req = requests.get(
                 url=url,
@@ -91,7 +89,7 @@ class DatasetContext(BaseContext):
         await self.update_dataset_map()
 
     def reset(self):
-        self.dataset_map = {}
+        self.asset_map = {}
 
     async def send_df_preview_message(
         self, server=None, target_stream=None, data=None, parent_header={}
@@ -102,7 +100,7 @@ class DatasetContext(BaseContext):
                 "headers": df.get("columns"),
                 "csv": df.get("head"),
             }
-            for var_name, df in self.dataset_map.items()
+            for var_name, df in self.asset_map.items()
         }
         self.beaker_kernel.send_response(
             "iopub", "dataset", preview, parent_header=parent_header
@@ -117,10 +115,10 @@ class DatasetContext(BaseContext):
         )
         df_info = df_info_response.get('return')
         for var_name, info in df_info.items():
-            if var_name in self.dataset_map:
-                self.dataset_map[var_name].update(info)
+            if var_name in self.asset_map:
+                self.asset_map[var_name].update(info)
             else:
-                self.dataset_map[var_name] = {
+                self.asset_map[var_name] = {
                     "name": f"User created dataframe '{var_name}'",
                     "description": "",
                     **info,
@@ -137,7 +135,7 @@ Please answer any user queries to the best of your ability, but do not guess if 
 If you are asked to manipulate or visualize the dataset, use the generate_code tool.
 """
         dataset_blocks = []
-        for var_name, dataset_obj in self.dataset_map.items():
+        for var_name, dataset_obj in self.asset_map.items():
             dataset_info = dataset_obj.get("info", {})
             dataset_description = await self.describe_dataset(var_name)
             dataset_blocks.append(f"""
@@ -167,7 +165,7 @@ The dataset has the following structure:
         # Update the local dataframe to match what's in the shell.
         # This will be factored out when we switch around to allow using multiple runtimes.
 
-        df_info = self.dataset_map.get(var_name, None)
+        df_info = self.asset_map.get(var_name, None)
         if not df_info:
             return None
         output = f"""
