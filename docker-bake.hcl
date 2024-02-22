@@ -43,7 +43,7 @@ group "default" {
 # ----------------------------------------------------------------------------------------------------------------------
 
 target "_platforms" {
-  platforms = ["linux/amd64"]
+  platforms = ["linux/amd64", "linux/arm64"]
 }
 
 target "beaker-kernel-base" {
