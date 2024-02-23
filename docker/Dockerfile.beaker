@@ -1,4 +1,4 @@
-FROM ghcr.io/darpa-askem/askem-julia:5.0.0 AS JULIA_BASE_IMAGE
+FROM ghcr.io/darpa-askem/askem-julia:beta AS JULIA_BASE_IMAGE
 
 FROM python:3.10
 

@@ -1,22 +1,23 @@
 SHELL=/usr/bin/env bash
 BASEDIR = $(shell pwd)
+COMPOSE_ARGS=--file docker/docker-compose.yml
 
 .PHONY:build
 build:
-	docker build . -t beaker-kernel:latest
+	docker build --file Docker.beaker . -t beaker-kernel:latest
 
 .PHONY:dev
 dev:
 	if [[ "$$(docker compose ps | grep 'jupyter')" == "" ]]; then \
-		docker compose pull; \
-		docker compose up -d --build && \
-		(sleep 1; python -m webbrowser "http://localhost:8888/dev_ui"); \
-		docker compose logs -f jupyter || true; \
+		docker compose ${COMPOSE_ARGS} pull; \
+		docker compose ${COMPOSE_ARGS} up -d --build && \
+		(sleep 1; python -m webbrowser "http://localhost:8888"); \
+		docker compose ${COMPOSE_ARGS} logs -f jupyter || true; \
 	else \
-		docker compose down jupyter && \
-		docker compose up -d jupyter && \
-		(sleep 1; python -m webbrowser "http://localhost:8888/dev_ui"); \
-		docker compose logs -f jupyter || true; \
+		docker compose ${COMPOSE_ARGS} down jupyter && \
+		docker compose ${COMPOSE_ARGS} up -d jupyter && \
+		(sleep 1; python -m webbrowser "http://localhost:8888"); \
+		docker compose ${COMPOSE_ARGS} logs -f jupyter || true; \
 	fi
 
 
