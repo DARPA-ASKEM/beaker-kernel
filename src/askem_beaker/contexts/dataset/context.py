@@ -70,7 +70,12 @@ class DatasetContext(BaseContext):
         var_map = {}
         for var_name, df_obj in self.asset_map.items():
             asset_type = df_obj.get("asset_type", "dataset")
-            filename = df_obj["info"].get("fileNames", [])[0]
+
+            if asset_type != "dataset":
+                filename = df_obj["info"].get("resultFiles", [])[0]
+            else:
+                filename = df_obj["info"].get("fileNames", [])[0]
+
             meta_url = f"{os.environ['HMI_SERVER_URL']}/{asset_type}s/{df_obj['id']}"
             url = f"{meta_url}/download-url?filename={filename}"
             data_url_req = requests.get(
