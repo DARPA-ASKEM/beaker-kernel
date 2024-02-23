@@ -4,7 +4,15 @@ COMPOSE_ARGS=--file docker/docker-compose.yml
 
 .PHONY:build
 build:
-	docker build --file Docker.beaker . -t beaker-kernel:latest
+	docker build --file docker/Dockerfile.beaker . -t beaker-kernel:latest
+
+.PHONY:build
+full-build:
+	docker build --file docker/Dockerfile.beaker . -t beaker-kernel:latest --no-cache
+
+.PHONY:build
+inspect:
+	docker compose ${COMPOSE_ARGS} exec jupyter /bin/bash
 
 .PHONY:dev
 dev:
