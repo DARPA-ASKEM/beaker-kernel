@@ -6,13 +6,27 @@ COMPOSE_ARGS=--file docker/docker-compose.yml
 build:
 	docker build --file docker/Dockerfile.beaker . -t beaker-kernel:latest
 
-.PHONY:build
+.PHONY:full-build
 full-build:
 	docker build --file docker/Dockerfile.beaker . -t beaker-kernel:latest --no-cache
 
-.PHONY:build
+.PHONY:inspect
 inspect:
 	docker compose ${COMPOSE_ARGS} exec jupyter /bin/bash
+
+.PHONY:down
+down:
+	docker compose ${COMPOSE_ARGS} down
+
+.PHONY:start # called `start` instead of `up` because it does more than `docker compose up`
+start:
+	docker compose ${COMPOSE_ARGS} pull;
+	docker compose ${COMPOSE_ARGS} up -d --build;
+	docker compose ${COMPOSE_ARGS} logs -f jupyter || true;
+
+.PHONY:logs
+logs:
+	docker compose ${COMPOSE_ARGS} logs -f jupyter || true;
 
 .PHONY:dev
 dev:

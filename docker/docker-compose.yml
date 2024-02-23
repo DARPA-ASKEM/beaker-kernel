@@ -102,6 +102,7 @@ services:
       - DEBUG=1
       - JUPYTER_SERVER=http://jupyter:8888
       - JUPYTER_TOKEN=89f73481102c46c0bc13b2998f9a4fce
+      - HMI_SERVER_URL=http://hmi-server:3000      
       - AUTH_USERNAME=api-service
       - AUTH_PASSWORD=agent bio terraform
       
@@ -113,5 +114,5 @@ services:
     depends_on:
       hmi-server:
         condition: service_healthy
-    
-
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
