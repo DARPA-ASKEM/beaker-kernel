@@ -219,7 +219,7 @@ If you are asked to manipulate, stratify, or visualize the model, use the genera
             auth=self.auth.requests_auth()
         )
         new_model_id = create_req.json()["id"]
-        raise Exception(new_model_id)
+        logger.debug(f"Created model {new_model_id}")
 
         self.beaker_kernel.send_response(
             "iopub", "save_model_response", content, parent_header=message.header
@@ -284,17 +284,18 @@ If you are asked to manipulate, stratify, or visualize the model, use the genera
         new_dataset["temporary"] = False
 
         import pprint
-        logger.error(f"creating dataset {pprint.pformat(new_dataset)}")
+        logger.debug(f"Creating dataset {pprint.pformat(new_dataset)}")
         create_req = requests.post(f"{dataservice_url}/datasets", auth=self.auth.requests_auth(), json=new_dataset)
         new_dataset_id = create_req.json()["id"]
 
         new_dataset["id"] = new_dataset_id
-        logger.error(f"dataset created: {new_dataset_id}")
+        logger.debug(f"Dataset created: {new_dataset_id}")
 
-        logger.error(f"uploading {filename} to {new_dataset_id}")
+        logger.debug(f"Uploading {filename} to {new_dataset_id}")
         new_dataset_url = f"{dataservice_url}/datasets/{new_dataset_id}"
         data_url_req = requests.get(f"{new_dataset_url}/upload-url?filename={filename}", auth=self.auth.requests_auth())
         data_url = data_url_req.json().get('url', None)
+        logger.debug(f"`{filename}` uploaded")
 
         code = self.get_code(
             "save_sol",

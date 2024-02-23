@@ -4,11 +4,11 @@ COMPOSE_ARGS=--file docker/docker-compose.yml
 
 .PHONY:build
 build:
-	docker build --file docker/Dockerfile.beaker . -t beaker-kernel:latest
+	docker build --file docker/Dockerfile.beaker -t beaker-kernel:latest .
 
-.PHONY:full-build
-full-build:
-	docker build --file docker/Dockerfile.beaker . -t beaker-kernel:latest --no-cache
+.PHONY:fresh-build
+fresh-build:
+	docker build --file docker/Dockerfile.beaker -t beaker-kernel:latest --no-cache .
 
 .PHONY:inspect
 inspect:
@@ -21,7 +21,7 @@ down:
 .PHONY:start # called `start` instead of `up` because it does more than `docker compose up`
 start:
 	docker compose ${COMPOSE_ARGS} pull;
-	docker compose ${COMPOSE_ARGS} up -d --build;
+	docker compose ${COMPOSE_ARGS} up -d --build --remove-orphans;
 	docker compose ${COMPOSE_ARGS} logs -f jupyter || true;
 
 .PHONY:logs
