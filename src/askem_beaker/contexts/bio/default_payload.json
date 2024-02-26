@@ -1,0 +1,12 @@
+{
+    "models": [
+        {
+            "name": "sir_model",
+            "model_id": "sir-model-id"
+        },
+        {
+            "name": "seird_model",
+            "model_id": "seird-model-id"
+        }
+    ]
+}

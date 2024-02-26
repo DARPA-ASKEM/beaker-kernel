@@ -28,6 +28,16 @@ dependencies = [
   "xarray==0.19.0",
   "numpy~=1.24.3",
   "scipy~=1.11.1",
+  # beaker-bio
+  "chromadb~=0.4.22",
+  "bioregistry~=0.10.119",
+  "pygraphviz~=1.12",
+  "jsonlines~=3.1.0",
+  "datasets~=2.7.0",
+  "tenacity~=8.2.3",
+  "astunparse~=1.6.3",
+  "tiktoken~=0.5.2",
+  "gilda"
 ]
 
 [tool.hatch.metadata]
