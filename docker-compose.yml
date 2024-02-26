@@ -4,9 +4,9 @@
 version: '3.9'
 
 include:
-  - hmi/docker-compose-base.yml
-  - hmi/docker-compose-common.yml
-  - hmi/docker-compose-keycloak.yml
+  - docker/hmi/docker-compose-base.yml
+  - docker/hmi/docker-compose-common.yml
+  - docker/hmi/docker-compose-keycloak.yml
 
 services:
   hmi-server:
@@ -91,8 +91,8 @@ services:
   
   jupyter:
     build:
-      dockerfile: docker/Dockerfile.beaker
-      context: ..
+      dockerfile: Dockerfile
+      context: .
       args:
         JULIA_IMAGE: askem-julia-base:build
     ports:
@@ -107,7 +107,7 @@ services:
       - AUTH_PASSWORD=agent bio terraform
       
     env_file:
-      - ../.env
+      - ./.env
     volumes:
       - ./src/askem_beaker:/home/jupyter/askem_beaker
     command: ["python", "-m", "beaker_kernel.server.dev", "watch"]
