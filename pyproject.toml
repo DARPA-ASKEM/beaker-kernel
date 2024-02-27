@@ -29,7 +29,6 @@ dependencies = [
   "numpy~=1.24.3",
   "scipy~=1.11.1",
   "seaborn~=0.13.2",
-  # beaker-mira
   "chromadb~=0.4.22",
   "bioregistry~=0.10.119",
   "pygraphviz~=1.12",
@@ -38,7 +37,11 @@ dependencies = [
   "tenacity~=8.2.3",
   "astunparse~=1.6.3",
   "tiktoken~=0.5.2",
-  "gilda"
+  "gilda",
+  "chirho[extras]~=0.2.0",
+  "pyro-ppl~=1.8.6",
+  "pyro-api~=0.1.2",  
+  "torchdiffeq"
 ]
 
 [tool.hatch.metadata]
