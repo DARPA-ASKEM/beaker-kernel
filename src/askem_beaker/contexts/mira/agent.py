@@ -486,7 +486,7 @@ class Agent(NewBaseAgent):
 
 
         Args:
-            code (str): code block to be submitted to the user inside triple backticks.
+            code (str):  code block to be submitted to the user inside triple backticks.
         """
         loop.set_state(loop.STOP_SUCCESS)
         preamble, code, coda = re.split("```\w*", code)
