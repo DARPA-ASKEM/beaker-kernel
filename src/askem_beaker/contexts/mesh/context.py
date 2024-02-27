@@ -47,3 +47,13 @@ class MeshContext(BaseContext):
 
     # async def auto_context(self):
     #     pass
+
+    @intercept()
+    def generate_mesh_from_geotiff(self, message):
+        """
+        """
+        img_var_or_path = message.content.get("img_file_or_path")
+        code = self.get_code(generate_mesh_from_geotiff)
+        return None
+
+    generate_mesh_from_geotiff.default_payload = {}
