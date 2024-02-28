@@ -147,7 +147,7 @@ class ChirhoToolset: #to change dynamically on new context creation
             query (str): Natural language query. Some Examples - "ode model", "sir model", "using dkg package" 
         """
         #to change dynamically on new context creation
-        from .procedures.python3.embed_documents import query_docs
+        from .lib.utils import query_docs
         return query_docs(query)
     
     @tool(autosummarize=True)
@@ -161,7 +161,7 @@ class ChirhoToolset: #to change dynamically on new context creation
             query (str): Natural language query. Some Examples - "ode model", "sir model", "using dkg package"
         """
         #to change dynamically on new context creation
-        from .procedures.python3.embed_functions_classes_2 import query_functions_classes
+        from .lib.utils import query_functions_classes
         return query_functions_classes(query)
 
 

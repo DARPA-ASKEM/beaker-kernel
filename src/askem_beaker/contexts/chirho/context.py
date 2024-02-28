@@ -75,7 +75,7 @@ class ChirhoContext(BaseContext): #to change dynamically on new context creation
                 })
     
     async def auto_context(self):
-        from .procedures.python3.dynamic_example_selector import query_examples 
+        from .lib.utils import query_examples 
         most_recent_user_query=''
         for message in self.agent.messages:
             if message['role']=='user':
