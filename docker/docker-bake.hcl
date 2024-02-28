@@ -49,7 +49,7 @@ target "_platforms" {
 target "beaker-kernel-base" {
 	context = "."
 	tags = tag("beaker-kernel", "", "")
-	dockerfile = "docker/Dockerfile.beaker"
+	dockerfile = "Dockerfile"
 }
 
 target "beaker-kernel" {
