@@ -7,19 +7,19 @@ services:
     build:
       dockerfile: Dockerfile
       context: .
-      args:
-        JULIA_IMAGE: askem-julia-base:build
     ports:
       - "8888:8888"
     environment:
-      - DATA_SERVICE_URL
       - DEBUG=1
       - JUPYTER_SERVER=http://jupyter:8888
       - JUPYTER_TOKEN=89f73481102c46c0bc13b2998f9a4fce
-      - AUTH_USERNAME
-      - AUTH_PASSWORD
+      - ENABLE_USER_PROMPT=true
+      - OPENAI_API_KEY
     env_file:
-      - .env
+      - .env      
     volumes:
       - ./src/askem_beaker:/home/jupyter/askem_beaker
+      - .:/jupyter
     command: ["python", "-m", "beaker_kernel.server.dev", "watch"]
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

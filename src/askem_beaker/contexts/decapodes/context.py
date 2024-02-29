@@ -219,6 +219,7 @@ If you are asked to manipulate, stratify, or visualize the model, use the genera
             auth=self.auth.requests_auth()
         )
         new_model_id = create_req.json()["id"]
+        logger.debug(f"Created model {new_model_id}")
 
         self.beaker_kernel.send_response(
             "iopub", "save_model_response", content, parent_header=message.header
@@ -262,3 +263,55 @@ If you are asked to manipulate, stratify, or visualize the model, use the genera
             "iopub", "reset_response", content, parent_header=message.header
         )
         await self.send_decapodes_preview_message(parent_header=message.header)
+
+    @intercept()
+    async def save_solution_request(self, message):
+        content = message.content
+
+        name = content.get("name")
+        description = content.get("description", "")
+        filename = content.get("filename", None)
+        soln_name = content.get("soln_name", "soln")
+        dataservice_url = os.environ["HMI_SERVER_URL"]
+
+        if filename is None:
+            filename = "dataset.csv"
+
+        new_dataset = {}
+        new_dataset["name"] = name
+        new_dataset["description"] = description 
+        new_dataset["fileNames"] = [filename]
+        new_dataset["temporary"] = False
+
+        import pprint
+        logger.debug(f"Creating dataset {pprint.pformat(new_dataset)}")
+        create_req = requests.post(f"{dataservice_url}/datasets", auth=self.auth.requests_auth(), json=new_dataset)
+        new_dataset_id = create_req.json()["id"]
+
+        new_dataset["id"] = new_dataset_id
+        logger.debug(f"Dataset created: {new_dataset_id}")
+
+        logger.debug(f"Uploading {filename} to {new_dataset_id}")
+        new_dataset_url = f"{dataservice_url}/datasets/{new_dataset_id}"
+        data_url_req = requests.get(f"{new_dataset_url}/upload-url?filename={filename}", auth=self.auth.requests_auth())
+        data_url = data_url_req.json().get('url', None)
+        logger.debug(f"`{filename}` uploaded")
+
+        code = self.get_code(
+            "save_sol",
+            {
+                "soln_name": soln_name,
+                "data_url": data_url,
+            }
+        )
+        df_response = await self.execute(code)
+
+        if df_response:
+            self.beaker_kernel.send_response(
+                "iopub",
+                "save_solution_response",
+                {
+                    "dataset_id": new_dataset_id,
+                    "filename": filename,
+                },
+            )

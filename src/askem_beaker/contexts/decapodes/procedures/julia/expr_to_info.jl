@@ -1,4 +1,4 @@
-using SyntacticModels, Decapodes, Catlab
+using Decapodes, Catlab
 import JSON3, DisplayAs
 
 function expr_to_svg(model)
@@ -14,7 +14,7 @@ end
 
 _response = Dict(
     "application/json" => generate_json_acset({{ target }}),
-    # "image/svg" => expr_to_svg({{ target }}) # TODO: Reinclude when graphviz bug is fixed
+    "image/svg" => expr_to_svg({{ target }}) # TODO: Reinclude when graphviz bug is fixed
 )
 
 

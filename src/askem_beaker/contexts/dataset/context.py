@@ -236,6 +236,8 @@ Statistics:
         new_dataset["name"] = new_name
         new_dataset["description"] += f"\\nTransformed from dataset '{parent_dataset['name']}' ({parent_dataset['id']}) at {datetime.datetime.utcnow().strftime('%c %Z')}"
         new_dataset["fileNames"] = [filename]
+        #clear the columns field on the new dataset as there was likely a change to either the columns or the data. HMI-Server will deal with regenerating this.
+        new_dataset["columns"] = []
 
         import pprint
         logger.error(f"new dataset: {pprint.pformat(new_dataset)}")

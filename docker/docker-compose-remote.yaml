@@ -6,7 +6,7 @@ services:
   jupyter:
     build:
       dockerfile: Dockerfile
-      context: .
+      context: ..
     ports:
       - "8888:8888"
     environment:
@@ -16,8 +16,10 @@ services:
       - ENABLE_USER_PROMPT=true
       - OPENAI_API_KEY
     env_file:
-      - .env      
+      - ../.env      
     volumes:
       - ./src/askem_beaker:/home/jupyter/askem_beaker
       - .:/jupyter
     command: ["python", "-m", "beaker_kernel.server.dev", "watch"]
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
