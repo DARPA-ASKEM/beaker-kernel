@@ -15,6 +15,7 @@ from beaker_kernel.lib.context import BaseContext
 logger = logging.getLogger(__name__)
 
 CONTEXT_JSON = """
+
 {
     "slug": "beaker_mimi",
     "package": "beaker_mimi_context.context",
