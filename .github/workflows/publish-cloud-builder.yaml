@@ -6,8 +6,8 @@ name: Build Docker Images using Cloud Builder
 
 on:
   # DEBUG
-  pull_request:
-    branches: ['main']
+  # pull_request:
+  #   branches: ['main']
   push:
     branches: ['main']
     tags: ['*']
@@ -37,37 +37,17 @@ jobs:
       - name: Show Generated Target
         run: echo ${{ steps.generate.outputs.bake_target }}
 
-      - name: Show disk usage
-        run: df -h
-
-  # # Build and Publish all targets associated with specified group
-  # bake:
-  #   needs:
-  #     - bake-target
-  #   uses: darpa-askem/.github/.github/workflows/bake-publish-cloud-builder.yaml@main
-  #   with:
-  #     file: 'docker/docker-bake.hcl'
-  #     group: prod
-  #     registry: 'ghcr.io'
-  #     organization: ${{ github.repository_owner }}
-  #   secrets:
-  #     username: ${{ secrets.DOCKER_CLOUD_BUILD_USERNAME }}
-  #     token: ${{ secrets.DOCKER_CLOUD_BUILD_TOKEN }}
-  #     endpoint: "${{ secrets.DOCKER_CLOUD_BUILD_ENDPOINT }}"
-
   # Build and Publish all targets associated with specified group
-  bake-publish-reduced:
+  bake:
     needs:
       - bake-target
-    uses: ./.github/workflows/bake-publish-reduced.yml
+    uses: darpa-askem/.github/.github/workflows/bake-publish-cloud-builder.yaml@main
     with:
       file: 'docker/docker-bake.hcl'
-      group: 'prod'
+      group: ${{ needs.bake-target.outputs.target }}
       registry: 'ghcr.io'
       organization: ${{ github.repository_owner }}
-      tag: 'test'
     secrets:
-      username: ${{ github.repository_owner }}
-      password: ${{ secrets.GITHUB_TOKEN }}
-            
-            
+      username: ${{ secrets.DOCKER_CLOUD_BUILD_USERNAME }}
+      token: ${{ secrets.DOCKER_CLOUD_BUILD_TOKEN }}
+      endpoint: "${{ secrets.DOCKER_CLOUD_BUILD_ENDPOINT }}"
