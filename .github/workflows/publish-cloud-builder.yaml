@@ -62,7 +62,7 @@ jobs:
     uses: ./.github/workflows/bake-publish-reduced.yml
     with:
       file: 'docker/docker-bake.hcl'
-      group: 'default'
+      group: 'prod'
       registry: 'ghcr.io'
       organization: ${{ github.repository_owner }}
       tag: 'test'
