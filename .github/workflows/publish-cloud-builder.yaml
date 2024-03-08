@@ -45,7 +45,7 @@ jobs:
     uses: ./.github/workflows/bake-publish-cloud-builder.yaml
     with:
       file: 'docker/docker-bake.hcl'
-      group: ${{ needs.bake-target.outputs.target }}
+      group: prod
       registry: 'ghcr.io'
       organization: ${{ github.repository_owner }}
     secrets:
