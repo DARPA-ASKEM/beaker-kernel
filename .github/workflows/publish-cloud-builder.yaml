@@ -37,6 +37,9 @@ jobs:
       - name: Show Generated Target
         run: echo ${{ steps.generate.outputs.bake_target }}
 
+      - name: Show disk usage
+        run: df -h
+
   # # Build and Publish all targets associated with specified group
   # bake:
   #   needs:
@@ -56,7 +59,7 @@ jobs:
   bake:
     needs:
       - bake-target
-    uses: ./.github/workflows/bake-publish.yaml
+    uses: ./.github/workflows/bake-publish-reduced.yml
     with:
       file: 'docker/docker-bake.hcl'
       group: 'default'
