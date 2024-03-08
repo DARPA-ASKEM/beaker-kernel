@@ -59,7 +59,7 @@ jobs:
     uses: ./.github/workflows/bake-publish.yaml
     with:
       file: 'docker/docker-bake.hcl'
-      group: 'prod'
+      group: 'default'
       registry: 'ghcr.io'
       organization: ${{ github.repository_owner }}
       tag: 'test'

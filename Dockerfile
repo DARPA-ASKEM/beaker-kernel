@@ -9,11 +9,6 @@ ENV JULIA_PATH=/usr/local/julia
 ENV JULIA_DEPOT_PATH=/usr/local/julia
 ENV JULIA_PROJECT=/home/jupyter/.julia/environments/askem
 
-COPY --chown=1000:1000 --from=JULIA_BASE_IMAGE /usr/local/julia /usr/local/julia
-COPY --chown=1000:1000 --from=JULIA_BASE_IMAGE /Project.toml /Manifest.toml /home/jupyter/.julia/environments/askem/
-RUN chmod -R 777 /usr/local/julia/logs
-RUN ln -sf /usr/local/julia/bin/julia /usr/local/bin/julia
-
 # Install r-lang and kernel
 RUN apt update && \
     apt install -y r-base r-cran-irkernel \
@@ -27,6 +22,11 @@ RUN apt-get install -y build-essential make gcc g++ git gfortran npm \
     npm install -g typescript
 ENV CPLUS_INCLUDE_PATH=/usr/include/gdal
 ENV C_INCLUDE_PATH=/usr/include/gdal
+
+COPY --chown=1000:1000 --from=JULIA_BASE_IMAGE /usr/local/julia /usr/local/julia
+COPY --chown=1000:1000 --from=JULIA_BASE_IMAGE /Project.toml /Manifest.toml /home/jupyter/.julia/environments/askem/
+RUN chmod -R 777 /usr/local/julia/logs
+RUN ln -sf /usr/local/julia/bin/julia /usr/local/bin/julia
 
 # Switch to non-root user. It is crucial for security reasons to not run jupyter as root user!
 RUN useradd -m jupyter
