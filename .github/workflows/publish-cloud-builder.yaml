@@ -37,19 +37,34 @@ jobs:
       - name: Show Generated Target
         run: echo ${{ steps.generate.outputs.bake_target }}
 
+  # # Build and Publish all targets associated with specified group
+  # bake:
+  #   needs:
+  #     - bake-target
+  #   uses: darpa-askem/.github/.github/workflows/bake-publish-cloud-builder.yaml@main
+  #   with:
+  #     file: 'docker/docker-bake.hcl'
+  #     group: prod
+  #     registry: 'ghcr.io'
+  #     organization: ${{ github.repository_owner }}
+  #   secrets:
+  #     username: ${{ secrets.DOCKER_CLOUD_BUILD_USERNAME }}
+  #     token: ${{ secrets.DOCKER_CLOUD_BUILD_TOKEN }}
+  #     endpoint: "${{ secrets.DOCKER_CLOUD_BUILD_ENDPOINT }}"
+
   # Build and Publish all targets associated with specified group
   bake:
     needs:
       - bake-target
-    uses: darpa-askem/.github/.github/workflows/bake-publish-cloud-builder.yaml@main
+    uses: ./.github/workflows/bake-publish.yaml
     with:
       file: 'docker/docker-bake.hcl'
-      group: prod
+      group: 'prod'
       registry: 'ghcr.io'
       organization: ${{ github.repository_owner }}
+      tag: 'test'
     secrets:
-      username: ${{ secrets.DOCKER_CLOUD_BUILD_USERNAME }}
-      token: ${{ secrets.DOCKER_CLOUD_BUILD_TOKEN }}
-      endpoint: "${{ secrets.DOCKER_CLOUD_BUILD_ENDPOINT }}"
+      username: ${{ github.repository_owner }}
+      password: ${{ secrets.GITHUB_TOKEN }}
             
             
