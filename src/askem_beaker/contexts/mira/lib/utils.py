@@ -33,7 +33,7 @@ def query_examples(query, n_results=5):
 
 
 def query_docs(query, collection_name="documentation_index", path="/home/jupyter/chromadb_functions_mira", n_results=5):
-    collection = start_chromadb(collection_name=collecstion_name, path=path)
+    collection = start_chromadb(collection_name=collection_name, path=path)
     result = collection.query(query_texts=[query], n_results=n_results)
     text = ""
     for i in range(len(result["ids"][0])):
