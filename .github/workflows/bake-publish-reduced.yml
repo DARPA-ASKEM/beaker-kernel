@@ -165,3 +165,8 @@ jobs:
           set: |
             *.cache-from=type=gha,scope=build-${{ matrix.target }}
             *.cache-to=type=gha,scope=build-${{ matrix.target }},mode=max
+
+      - name: Debug
+        run: |
+          echo "Disk space after build"
+          df -h
