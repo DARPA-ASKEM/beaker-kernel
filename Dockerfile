@@ -15,7 +15,8 @@ RUN apt update && \
         graphviz libgraphviz-dev \
         libevent-core-2.1-7 libevent-pthreads-2.1-7 && \
     apt clean -y && \
-    apt autoclean -y
+    apt autoclean -y \
+    apt autoremove -y
 
 RUN apt-get install -y build-essential make gcc g++ git gfortran npm \
         gdal-bin libgdal-dev python3-all-dev libspatialindex-dev && \
