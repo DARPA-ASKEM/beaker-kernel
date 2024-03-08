@@ -58,5 +58,5 @@ target "beaker-kernel-base" {
 
 # NOTE: target name will be used as the name of the image
 target "beaker-kernel" {
-  inherits = ["_platforms", "docker-metadata-action", "beaker-kernel-base"]
+  inherits = ["beaker-kernel-base", "docker-metadata-action", "_platforms"]
 }
