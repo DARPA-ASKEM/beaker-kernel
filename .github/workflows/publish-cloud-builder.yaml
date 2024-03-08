@@ -5,6 +5,9 @@
 name: Build Docker Images using Cloud Builder
 
 on:
+  # DEBUG
+  pull_request:
+    branches: ['main']
   push:
     branches: ['main']
     tags: ['*']
@@ -22,25 +25,24 @@ jobs:
       - name: Determine target
         id: generate
         run: |
-          # NOTE: Using direct target names instead of group names as its a single
-          # image build and want to use the target as part of the output image tag
           if [[ '${{ github.event_name }}' == 'pull_request' ]]; then
-            TGT=askem-julia-base
+            TGT=default
           else
-            TGT=askem-julia
+            TGT=prod
           fi
 
           echo "$TGT"
           echo "bake_target=${TGT,,}" >> ${GITHUB_OUTPUT}
 
-      - name: Show Generated Tag
+      - name: Show Generated Target
         run: echo ${{ steps.generate.outputs.bake_target }}
 
   # Build and Publish all targets associated with specified group
   bake:
     needs:
       - bake-target
-    uses: darpa-askem/.github/.github/workflows/bake-publish-cloud-builder.yaml@main
+    # uses: darpa-askem/.github/.github/workflows/bake-publish-cloud-builder.yaml@main
+    uses: ./.github/workflows/bake-publish-cloud-builder.yaml
     with:
       file: 'docker/docker-bake.hcl'
       group: ${{ needs.bake-target.outputs.target }}
