@@ -3,7 +3,7 @@ BASEDIR = $(shell pwd)
 
 .PHONY:build
 build:
-	docker build -t beaker-kernel:latest .
+	docker buildx bake -f docker/docker-bake.hcl
 
 .PHONY:inspect
 inspect:
