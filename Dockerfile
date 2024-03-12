@@ -37,6 +37,9 @@ RUN git clone https://github.com/indralab/mira.git /home/jupyter/mira && \
     pip install --no-cache-dir /home/jupyter/mira/"[ode,tests,dkg-client,sbml]" && \
     rm -r /home/jupyter/mira
 
+# Install PyCIEMSS from GitHub
+RUN pip install --no-cache-dir pyro-ppl==1.8.6 git+https://github.com/ciemss/pyciemss.git@d6838e72bdc145b2f87ab9e33e220eb84fd87e87 --use-pep517
+
 # Install project requirements
 COPY --chown=1000:1000 pyproject.toml README.md hatch_build.py /home/jupyter/askem_beaker/
 RUN mkdir -p /home/jupyter/askem_beaker/src/askem_beaker && touch /home/jupyter/askem_beaker/src/askem_beaker/__init__.py
