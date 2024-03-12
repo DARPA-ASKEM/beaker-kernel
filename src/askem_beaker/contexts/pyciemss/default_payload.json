@@ -1,3 +1,7 @@
 {
-
+	"model_config_id": "501bb870-890c-4aaf-adce-d66d0080bb08",
+	"optimize": {
+		"risk_bound": 200,		
+		"end_time": 20.0
+	}
 }
