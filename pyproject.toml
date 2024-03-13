@@ -46,7 +46,8 @@ dependencies = [
   "netcdf4==1.6.5",
   "cftime==1.6.3",
   "flowcast==0.3.3",
-  "basemap==1.4.1"
+  "basemap==1.4.1",
+  "cartopy~=0.22.0",
 ]
 
 [tool.hatch.metadata]
