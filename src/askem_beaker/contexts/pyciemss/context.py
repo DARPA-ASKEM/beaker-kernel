@@ -1,5 +1,6 @@
 import codecs
 import copy
+import json
 import datetime
 import os
 import requests
@@ -7,7 +8,7 @@ from base64 import b64encode
 from typing import TYPE_CHECKING, Any, Dict
 
 from beaker_kernel.lib.context import BaseContext
-#from beaker_kernel.lib.utils import action
+from beaker_kernel.lib.utils import action
 
 from .agent import PyCIEMSSAgent
 from askem_beaker.utils import get_auth
@@ -33,14 +34,11 @@ class PyCIEMSSContext(BaseContext):
         await self.execute(self.get_code("setup"))
         if "model_config_id" in config:
             await self.set_model_config(config["model_config_id"], parent_header=parent_header)
-            if "optimize" in config:
-                await self.get_optimize(config["optimize"], parent_header=parent_header)
 
     async def set_model_config(self, config_id, agent=None, parent_header=None):
         if parent_header is None: parent_header = {}
         self.config_id = config_id
         meta_url = f"{os.environ['HMI_SERVER_URL']}/model-configurations/{self.config_id}"
-        logger.error(f"Meta url: {meta_url}")
         self.configuration = requests.get(meta_url, 
                                           auth=(os.environ['AUTH_USERNAME'],
                                                 os.environ['AUTH_PASSWORD'])
@@ -55,8 +53,19 @@ class PyCIEMSSContext(BaseContext):
         await self.execute(command)        
 
 
-    async def get_optimize(self, config: dict, agent=None, parent_header=None):
-        if parent_header is None: parent_header = {}
-        code = self.get_code("optimize", config)
-        content = {"code": code}
-        self.send_response("iopub", "code_cell", content, parent_header)
+    @action()
+    async def get_optimize(self, message):
+        code = self.get_code("optimize", message.content)
+        self.send_response("iopub", "code_cell", code, {})
+        return code
+    get_optimize._default_payload = "{}"
+   
+
+    @action()
+    async def save_results(self, message):
+        code = self.get_code("save_results")
+        response = await self.evaluate(code)
+        return response["return"]
+    save_results._default_payload = "{}"
+
+
