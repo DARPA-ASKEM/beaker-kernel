@@ -57,6 +57,8 @@ RUN unzip /home/jupyter/askem_beaker/resources/chromadb_functions_mira.zip \
     && mv /home/jupyter/chromadb_functions /home/jupyter/chromadb_functions_mira && ls
 RUN unzip /home/jupyter/askem_beaker/resources/chromadb_functions_chirho.zip \
     && mv /home/jupyter/chromadb_functions /home/jupyter/chromadb_functions_chirho && ls
+RUN unzip /home/jupyter/askem_beaker/resources/chromadb_functions_mimi.zip \
+    && mv /home/jupyter/chromadb_functions /home/jupyter/chromadb_functions_mimi && ls
 
 # Install Julia kernel (as user jupyter)
 RUN /usr/local/julia/bin/julia -e 'using IJulia; IJulia.installkernel("julia"; julia=`/usr/local/julia/bin/julia --threads=4`)'
