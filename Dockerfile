@@ -1,4 +1,5 @@
-FROM ghcr.io/darpa-askem/askem-julia:7.0.1 AS JULIA_BASE_IMAGE
+#FROM ghcr.io/darpa-askem/askem-julia:8.0.0 AS JULIA_BASE_IMAGE
+FROM askem-julia:mimi AS JULIA_BASE_IMAGE
 
 FROM python:3.10
 
