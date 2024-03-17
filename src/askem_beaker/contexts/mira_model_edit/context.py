@@ -29,6 +29,7 @@ class MiraModelEditContext(BaseContext):
 	model_json: Optional[str]
 	model_dict: Optional[dict[str, Any]]
 	var_name: Optional[str] = "model"
+	schema_name: Optional[str] = "petrinet"
 
 	def __init__(self, beaker_kernel: "LLMKernel", subkernel: "BaseSubkernel", config: Dict[str, Any]) -> None:
 		self.reset()
@@ -54,12 +55,7 @@ class MiraModelEditContext(BaseContext):
 			self.config_id = "default"
 			meta_url = f"{os.environ['HMI_SERVER_URL']}/models/{self.model_id}"
 			self.amr = requests.get(meta_url, auth=self.auth.requests_auth()).json()
-		elif item_type == "model_config":
-			self.config_id = item_id
-			meta_url = f"{os.environ['HMI_SERVER_URL']}/model_configurations/{self.config_id}"
-			self.configuration = requests.get(meta_url, auth=self.auth.requests_auth()).json()
-			self.model_id = self.configuration.get("model_id")
-			self.amr = self.configuration.get("configuration")
+			self.schema_name = self.amr.get("header",{}).get("schema_name","petrinet")
 		self.original_amr = copy.deepcopy(self.amr)
 		if self.amr:
 			await self.load_mira()
@@ -89,7 +85,7 @@ class MiraModelEditContext(BaseContext):
 		self, server=None, target_stream=None, data=None, parent_header={}
 	):
 		try:
-			preview = await self.evaluate(self.get_code("model_preview"), {"var_name": self.var_name})
+			preview = await self.evaluate(self.get_code("model_preview", {"var_name": self.var_name, "schema_name": self.schema_name}))
 			content = preview["return"]
 			self.beaker_kernel.send_response(
 					"iopub", "model_preview", content, parent_header=parent_header
