@@ -1,5 +1,4 @@
-#FROM ghcr.io/darpa-askem/askem-julia:8.0.0 AS JULIA_BASE_IMAGE
-FROM askem-julia:mimi3 AS JULIA_BASE_IMAGE
+FROM ghcr.io/darpa-askem/askem-julia:8.0.0 AS JULIA_BASE_IMAGE
 
 FROM python:3.10
 
@@ -59,7 +58,6 @@ RUN unzip /home/jupyter/askem_beaker/resources/chromadb_functions_mira.zip \
 RUN unzip /home/jupyter/askem_beaker/resources/chromadb_functions_chirho.zip \
     && mv /home/jupyter/chromadb_functions /home/jupyter/chromadb_functions_chirho && ls
 RUN unzip /home/jupyter/askem_beaker/resources/chromadb_functions_mimi.zip
-#&& mv /home/jupyter/chromadb_functions_mimi /home/jupyter/chromadb_functions_mimi && ls
 
 # Install Julia kernel (as user jupyter)
 RUN /usr/local/julia/bin/julia -e 'using IJulia; IJulia.installkernel("julia"; julia=`/usr/local/julia/bin/julia --threads=4`)'
