@@ -27,8 +27,6 @@ class Context(BaseContext):
         subkernel: "BaseSubkernel",
         config: Dict[str, Any],
     ) -> None:
-        with open('context.json','r') as f:
-            self.context_conf = json.loads(f.read())
         self.library_name="Mimi.jl"
         self.sub_module_description=[]#self.context_conf.get('library_submodule_descriptions', '')
         self.functions = {}
