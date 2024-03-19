@@ -39,6 +39,9 @@ class Context(BaseContext):
         self.code_block_print='\n\n'.join([f'Code Block[{i}]: {self.code_blocks[i]["code"]}\nExecution Status:{self.code_blocks[i]["execution_status"]}\nExecution Order:{self.code_blocks[i]["execution_order"]}\nCode Block Output or Error:{self.code_blocks[i]["output"]}' for i in range(len(self.code_blocks))])
         super().__init__(beaker_kernel, subkernel, self.agent_cls, config)
         
+    async def render_code(self, message, code):
+        self.send_response("iopub", "code_cell", {"code": code}, parent_header=message.header)
+
     async def get_jupyter_context(self):
         imported_modules=[]
         variables={}

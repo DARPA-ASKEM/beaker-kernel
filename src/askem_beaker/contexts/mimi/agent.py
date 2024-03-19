@@ -21,12 +21,57 @@ class Toolset:
         E.g. Searching using the name "Data" might return ["DataFrames"]
 
         Args:
-            name (str): this is the name of the package to get information about.
+            name (str): this is the name (or part of the name) of the package to find.
         Returns:
             str: List of modules that can be imported with `import`/`using`
         """
         _, _, installed = await agent.context.get_jupyter_context()
         return str(list(filter(lambda module: name.lower() in module.lower(), installed)))
+
+    @tool(autosummarize=True)
+    async def search_package_registries(self, name: str, agent: AgentRef) -> str:
+        """
+        Search packages that can be installed using `Pkg.add` using a naive match (occursin)
+
+        It might be worth checking installed packages first.
+
+        E.g. Searching using the name "X" might return ["MimiX"] which is the name of the IAM
+        
+        you want to install
+
+        Args:
+            name (str): this is the name (or part of the name) of the package to find.
+
+        Returns:
+            str: List of modules that can be installed using Pkg.add
+        """
+        code = agent.context.get_code("search_packages", {"module": name})
+        response = await agent.context.beaker_kernel.evaluate(
+            code,
+            parent_header={},
+        )
+        return str(response["return"])
+    
+
+    @tool(autosummarize=False)
+    async def get_model_info(self, model_var_name: str, agent: AgentRef) -> dict:
+        """
+        Get information about Mimi model parameters and variables and which compartments they belong to.
+
+        You should probably run this before asking the user for more information.
+
+        Args:
+            model_var_name (str): Variable name that contains the Mimi model in the REPL
+
+        Returns:
+            dict: Information about the Mimi Model  
+        """
+        code = agent.context.get_code("model_info", {"model": model_var_name})
+        response = await agent.context.beaker_kernel.evaluate(
+            code,
+            parent_header={},
+        )
+        return response["return"]
 
 
 class Agent(NewBaseAgent):
@@ -43,12 +88,28 @@ class Agent(NewBaseAgent):
         self.checked_code=False
         self.code_attempts=0
     
+    def send_code(self, code: str, loop: LoopControllerRef) -> str:
+        loop.set_state(loop.STOP_SUCCESS)
+        preamble, code, coda = re.split("```\w*", code)
+        result = json.dumps(
+            {
+                "action": "code_cell",
+                "language": self.context.subkernel.KERNEL_NAME,
+                "content": code.strip(),
+            }
+        )
+        #check if successful then reset check code...
+        return result
+    
     #no_repl version
     @tool()
-    async def submit_code(self, code: str, agent: AgentRef, loop: LoopControllerRef) -> None:
+    async def submit_custom_code(self, code: str, agent: AgentRef, loop: LoopControllerRef) -> None:
         """
-        Use this when you are ready to submit your code to the user.
+        Use this when you are ready to submit your custom code to the user. 
         
+        Use other submit tools if you don't need to generate custom code.
+
+        If there is a package is not yet installed, feel free to suggest a Pkg.add as well.
         
         Ensure to handle any required dependencies, and provide a well-documented and efficient solution. Feel free to create helper functions or classes if needed.
         
@@ -63,17 +124,22 @@ class Agent(NewBaseAgent):
         Args:
             code (str): Julia code block to be submitted to the user inside triple backticks.
         """
-        loop.set_state(loop.STOP_SUCCESS)
-        preamble, code, coda = re.split("```\w*", code)
-        result = json.dumps(
-            {
-                "action": "code_cell",
-                "language": self.context.subkernel.KERNEL_NAME,
-                "content": code.strip(),
-            }
-        )
-        #check if successful then reset check code...
-        return result
+        return self.send_code(code, loop)
+    
+    @tool()
+    async def submit_plot_var_code(self, model_name: str, component_name: str, variable_name: str, agent: AgentRef, loop: LoopControllerRef) -> None: 
+        """
+        Submits the code `Mimi.plot(${model_name}, :${component_name}, :${variable_name})`.
+
+        All the information should be found if you run `get_model_info`.
+
+        Args:
+            model_name (str): Variable name of the Mimi model in the REPL
+            component_name (str): The component of interest
+            variable_name (str): The variable to plot INSIDE the component
+        """
+        code = f"Mimi.plot({model_name}, :{component_name}, :{variable_name})"
+        return self.send_code(code, code)
 
 
     @tool(autosummarize=True)
