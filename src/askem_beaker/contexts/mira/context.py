@@ -123,48 +123,16 @@ class Context(BaseContext):
         """
         Preview renders of mira models.
         """
-        # note: not string interpolation!
-        code_block = """
-__state = locals()
-__models = {}
-def visualize_model(name, model) -> str:
-    from mira.modeling.viz import GraphicalModel
-    import base64
-    graphical_model = GraphicalModel.from_template_model(model)
-    filename = f"_preview_{name}.png"
-    graphical_model.write(filename, format="png")
-    with open(filename, "rb") as f:
-        data = f.read()
-        enc = base64.b64encode(bytes(data))
-        return str(enc)
-
-for model in"""
-        inner_model_list = "["
-        # get model variable names, not the models themselves - to pair name -> model lookup
-        for model in self.loaded_models:
-            inner_model_list += f'"{model}", '
-        inner_model_list += "]"
-        code_block += f" {inner_model_list}:"
-
-        code_block += """
-    __models[model] = {"model": __state[model], "preview": visualize_model(model, __state[model])}
-
-del __state
-import pickle as __pickle
-__pickle.dumps(__models)
-"""
+        code_block = self.get_code(
+            "visualize_mira_models",
+            {
+                "model_vars": self.loaded_models,
+            },
+        )
         result = await self.beaker_kernel.evaluate(code_block)
-        state = result.get("return", None)
-        models = pickle.loads(state)
-        payload = {}
-        for model in models:
-            # somewhere in serialization, b'' gets wrapped around the image png.
-            # this could be handled more elegantly.
-            image = models[model]["preview"].replace("b'", "")[:-1]
-            payload[model] = {"text/plain": repr(models[model]["model"]), "image/png": image}
-
+        models = result.get("return", None)
         return {
-            "Mira Models": payload,
+            "Mira Models": models,
         }
 
     async def auto_context(self):
