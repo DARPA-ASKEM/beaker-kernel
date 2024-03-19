@@ -56,7 +56,7 @@ class PyCIEMSSContext(BaseContext):
     @action()
     async def get_optimize(self, message):
         code = self.get_code("optimize", message.content)
-        self.send_response("iopub", "code_cell", code, {})
+        self.send_response("iopub", "code_cell", {"code": code}, parent_header=message.header) 
         return code
     get_optimize._default_payload = "{}"
    
