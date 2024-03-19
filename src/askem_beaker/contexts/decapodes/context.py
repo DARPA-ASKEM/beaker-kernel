@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any, Dict
 import requests
 
 from beaker_kernel.lib.context import BaseContext
-from beaker_kernel.lib.utils import intercept
+from beaker_kernel.lib.utils import action
 
 from .agent import DecapodesAgent
 from askem_beaker.utils import get_auth
@@ -64,6 +64,18 @@ class DecapodesContext(BaseContext):
 
     def reset(self):
         pass
+
+    async def generate_preview(self):
+        preview = await self.evaluate(self.get_code("generate_preview", {"target": self.target}))
+        content = preview["return"]
+
+        result = {
+            "decapodes": {
+                self.target: content,
+            }
+        }
+        logger.error(json.dumps(result, indent=2))
+        return result
 
     async def auto_context(self):
         return """You are an scientific modeler whose goal is to construct a DecaExpr for Decapodes.jl modeling library.
@@ -146,7 +158,7 @@ If you are asked to manipulate, stratify, or visualize the model, use the genera
             "iopub", "decapodes_preview", content, parent_header=parent_header
         )
 
-    @intercept(msg_type="compile_expr_request")
+    @action()
     async def compile_expr(self, message):
         content = message.content
 
@@ -167,7 +179,7 @@ If you are asked to manipulate, stratify, or visualize the model, use the genera
         await self.send_decapodes_preview_message(parent_header=message.header)
 
 
-    @intercept(msg_type="construct_amr_request")
+    @action()
     async def construct_amr(self, message):
         content = message.content
 
@@ -197,8 +209,8 @@ If you are asked to manipulate, stratify, or visualize the model, use the genera
             "iopub", "construct_amr_response", amr, parent_header=message.header
         )
 
-    @intercept()
-    async def save_amr_request(self, message):
+    @action()
+    async def save_amr(self, message):
         content = message.content
 
         header = content["header"]
@@ -225,8 +237,8 @@ If you are asked to manipulate, stratify, or visualize the model, use the genera
             "iopub", "save_model_response", content, parent_header=message.header
         )
 
-    @intercept()
-    async def model_to_equation_request(self, message):
+    @action()
+    async def model_to_equation(self, message):
         content = message.content
         model_name = content.get("model_name", self.target)
 
@@ -244,8 +256,8 @@ If you are asked to manipulate, stratify, or visualize the model, use the genera
         )
 
 
-    @intercept()
-    async def reset_request(self, message):
+    @action(action_name="reset")
+    async def reset_action(self, message):
         content = message.content
 
         model_name = content.get("model_name", self.target)
@@ -264,8 +276,8 @@ If you are asked to manipulate, stratify, or visualize the model, use the genera
         )
         await self.send_decapodes_preview_message(parent_header=message.header)
 
-    @intercept()
-    async def save_solution_request(self, message):
+    @action()
+    async def save_solution(self, message):
         content = message.content
 
         name = content.get("name")
@@ -279,7 +291,7 @@ If you are asked to manipulate, stratify, or visualize the model, use the genera
 
         new_dataset = {}
         new_dataset["name"] = name
-        new_dataset["description"] = description 
+        new_dataset["description"] = description
         new_dataset["fileNames"] = [filename]
         new_dataset["temporary"] = False
 
@@ -315,3 +327,4 @@ If you are asked to manipulate, stratify, or visualize the model, use the genera
                     "filename": filename,
                 },
             )
+
