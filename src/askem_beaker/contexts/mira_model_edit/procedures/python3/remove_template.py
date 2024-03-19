@@ -10,7 +10,7 @@ def remove_template(tm: TemplateModel, template_name) -> TemplateModel:
         tm_new.templates.append(t)
     
     # Remove parameters only used in removed templates
-    tm_new.eliminate_unused_parameters()
+    # tm_new.eliminate_unused_parameters()
 
     # Ditto for initials
     tm_new.initials = {i: c for i, c in tm_new.initials.items() if i in tm_new.get_concepts_name_map()}

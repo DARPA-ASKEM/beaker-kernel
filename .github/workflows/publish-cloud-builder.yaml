@@ -1,7 +1,8 @@
 ---
 # Automatically build Docker images using a cloud builder and publish them to a
 # container registry using HCL Bake file.
-
+#
+# NOTE: CURRENTLY DISABLED IN THE GH UI
 name: Build Docker Images using Cloud Builder
 
 on:

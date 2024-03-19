@@ -1,4 +1,4 @@
-FROM ghcr.io/darpa-askem/askem-julia:7.0.1 AS JULIA_BASE_IMAGE
+FROM ghcr.io/darpa-askem/askem-julia:8.0.1 AS JULIA_BASE_IMAGE
 
 FROM python:3.10
 
@@ -17,6 +17,10 @@ RUN apt update && \
     apt clean -y && \
     apt autoclean -y \
     apt autoremove -y
+
+# Install forecast hub requirements (Rlang)
+RUN R -e "install.packages(c('evalcast', 'covidcast', 'magrittr', 'lubridate'), repos='http://cran.rstudio.com/')"
+RUN R -e "remotes::install_github('cmu-delphi/covidcast', ref = 'main', subdir = 'R-packages/evalcast')"
 
 RUN apt-get install -y build-essential make gcc g++ git gfortran npm \
         gdal-bin libgdal-dev python3-all-dev libspatialindex-dev && \
@@ -57,6 +61,7 @@ RUN unzip /home/jupyter/askem_beaker/resources/chromadb_functions_mira.zip \
     && mv /home/jupyter/chromadb_functions /home/jupyter/chromadb_functions_mira && ls
 RUN unzip /home/jupyter/askem_beaker/resources/chromadb_functions_chirho.zip \
     && mv /home/jupyter/chromadb_functions /home/jupyter/chromadb_functions_chirho && ls
+RUN unzip /home/jupyter/askem_beaker/resources/chromadb_functions_mimi.zip
 
 # Install Julia kernel (as user jupyter)
 RUN /usr/local/julia/bin/julia -e 'using IJulia; IJulia.installkernel("julia"; julia=`/usr/local/julia/bin/julia --threads=4`)'
