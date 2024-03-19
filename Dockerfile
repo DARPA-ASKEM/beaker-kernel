@@ -18,6 +18,10 @@ RUN apt update && \
     apt autoclean -y \
     apt autoremove -y
 
+# Install forecast hub requirements (Rlang)
+RUN R -e "install.packages(c('evalcast', 'covidcast', 'magrittr', 'lubridate'), repos='http://cran.rstudio.com/')"
+RUN R -e "remotes::install_github('cmu-delphi/covidcast', ref = 'main', subdir = 'R-packages/evalcast')"
+
 RUN apt-get install -y build-essential make gcc g++ git gfortran npm \
         gdal-bin libgdal-dev python3-all-dev libspatialindex-dev && \
     npm install -g typescript
