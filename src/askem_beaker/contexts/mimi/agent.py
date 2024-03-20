@@ -127,9 +127,11 @@ class Agent(NewBaseAgent):
         return self.send_code(code, loop)
     
     @tool()
-    async def submit_plot_var_code(self, model_name: str, component_name: str, variable_name: str, agent: AgentRef, loop: LoopControllerRef) -> None: 
+    async def generate_plot_var_code(self, model_name: str, component_name: str, variable_name: str, agent: AgentRef, loop: LoopControllerRef) -> None: 
         """
-        Submits the code `Mimi.plot(${model_name}, :${component_name}, :${variable_name})`.
+        Generate the code `Mimi.plot(${model_name}, :${component_name}, :${variable_name})`.
+
+        Once this code is generated, please give it to `submit_custom_code`
 
         All the information should be found if you run `get_model_info`.
 
@@ -139,7 +141,7 @@ class Agent(NewBaseAgent):
             variable_name (str): The variable to plot INSIDE the component
         """
         code = f"Mimi.plot({model_name}, :{component_name}, :{variable_name})"
-        return self.send_code(code, code)
+        return code
 
 
     @tool(autosummarize=True)
