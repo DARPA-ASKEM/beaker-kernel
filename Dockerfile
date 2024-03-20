@@ -1,4 +1,5 @@
 FROM ghcr.io/darpa-askem/askem-julia:8.0.1 AS JULIA_BASE_IMAGE
+FROM ghcr.io/darpa-askem/askem-forecast-hub:latest AS FORECAST_HUB_BASE
 
 FROM python:3.10
 
@@ -18,9 +19,8 @@ RUN apt update && \
     apt autoclean -y \
     apt autoremove -y
 
-# Install forecast hub requirements (Rlang)
-RUN R -e "install.packages(c('evalcast', 'covidcast', 'magrittr', 'lubridate'), repos='http://cran.rstudio.com/')"
-RUN R -e "remotes::install_github('cmu-delphi/covidcast', ref = 'main', subdir = 'R-packages/evalcast')"
+# # Install forecast hub requirements from precompiled image (Rlang)
+COPY --chown=1000:1000 --from=FORECAST_HUB_BASE /usr/local/lib/R/site-library/ /usr/local/lib/R/site-library/
 
 RUN apt-get install -y build-essential make gcc g++ git gfortran npm \
         gdal-bin libgdal-dev python3-all-dev libspatialindex-dev && \
