@@ -74,7 +74,6 @@ class DecapodesContext(BaseContext):
                 self.target: content,
             }
         }
-        logger.error(json.dumps(result, indent=2))
         return result
 
     async def auto_context(self):
