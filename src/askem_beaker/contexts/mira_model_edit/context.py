@@ -528,7 +528,8 @@ class MiraModelEditContext(BaseContext):
 		model_name = content.get("model_name", "model")
 
 		code = self.get_code("amr_to_templates", {
-			"var_name": model_name
+			"var_name": model_name,
+			"schema_name": self.schema_name
 		})
 		result = (await self.evaluate(code))["return"]
 
