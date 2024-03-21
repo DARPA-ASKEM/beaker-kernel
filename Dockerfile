@@ -37,7 +37,10 @@ RUN ln -sf /usr/local/julia/bin/julia /usr/local/bin/julia
 RUN useradd -m jupyter
 USER jupyter
 
-# Install Mira from github
+
+# Install Mira from github, with cache-bust
+ADD https://api.github.com/repos/DARPA-ASKEM/beaker-kernel/git/refs/heads/main bust-cache.json
+
 RUN git clone https://github.com/indralab/mira.git /home/jupyter/mira && \
     pip install --no-cache-dir /home/jupyter/mira/"[ode,tests,dkg-client,sbml]" && \
     rm -r /home/jupyter/mira
