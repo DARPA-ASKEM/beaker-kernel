@@ -81,10 +81,11 @@ class PyCIEMSSContext(BaseContext):
         response = await self.evaluate(
            f"_result_fields()" 
         )
+        result_files = response["return"]
         payload = {
             "name": "PyCIEMSS Notebook Session",
             "execution_payload": {},
-            "result_files": response["return"],
+            "result_files": result_files,
             "type": sim_type,
             "status": "complete",
             "engine": "ciemss",
@@ -101,14 +102,66 @@ class PyCIEMSSContext(BaseContext):
         sim_id = response.json()["id"]
         sim_url = post_url + f"/{sim_id}"
         payload = requests.get(sim_url, auth=auth).json()
-        logging.error(f"Payload : {payload}")
         result_files = await self.evaluate(
            f"_save_result('{sim_id}', '{auth.username}', '{auth.password}')" 
         )
         assert isinstance(result_files["return"], list)
-        return sim_id
-    save_results_to_hmi._default_payload = "{}"
 
+        if "result.csv" not in result_files["return"]:
+            return {
+                "simulation_id": sim_id,
+                "result_files": result_files["return"]
+            }
+
+
+        dataset_payload = {
+            "name": "Beaker Kernel Results",
+            "temporary": False,
+            "publicAsset": True,
+            "description": "Dataset created in the Beaker Kernel PyCIEMSS Context",
+            "fileNames": [
+                "result.csv"
+            ],
+            "columns": [
+            ],
+            "metadata": {},
+            "source": "beaker-kernel",
+            "grounding": {
+                "identifiers": {},
+                "context": {}
+            }
+        }
+
+        dataservice_url = os.environ["HMI_SERVER_URL"] + "/datasets"
+        create_req = requests.post(dataservice_url, auth=auth, json=dataset_payload)
+        dataset_id = create_req.json()["id"]
+        dataset_url = dataservice_url + f"/{dataset_id}"
+        data_url_req = requests.get(f"{dataset_url}/upload-url?filename=result.csv", auth=auth)
+        data_url = data_url_req.json().get('url', None)
+        code = self.get_code(
+            "df_save_as",
+            {
+                "data_url": data_url,
+            }
+        )
+        kernel_response = await self.execute(code) # TODO: Check error
+
+        add_asset_url = os.environ["HMI_SERVER_URL"] + f"/projects/{message.content['project_id']}/assets/dataset/{dataset_id}"
+        response = requests.post(add_asset_url, auth=auth)
+        if response.status_code >= 300:
+            raise Exception(
+                (
+                    "Failed to add dataset as asset ({add_asset_url}) "
+                    f"(reason: {response.reason}({response.status_code}) - {json.dumps(payload)}"
+                )
+            )
+
+        return {
+            "dataset_id": dataset_id,
+            "simulation_id": sim_id,
+        }
+
+    save_results_to_hmi._default_payload = '{\n\t"project_id": "a22f4865-c979-4ca2-aae0-5c9afc81b72a"\n}'
 
 
 

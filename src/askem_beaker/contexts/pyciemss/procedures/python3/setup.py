@@ -44,7 +44,6 @@ def _result_fields() -> list[str]:
        "policy": "policy.json",
        "OptResults": "optimize_results.json", # excluding the optimize_results.dill for now.
        "visual": "visualization.json",
-       "result": "result.csv"
     }
     to_filename = lambda key: mapping[key] if key in result else None
     return [to_filename(key) for key in mapping.keys() if to_filename(key) is not None]

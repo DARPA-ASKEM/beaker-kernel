@@ -46,7 +46,7 @@ RUN git clone https://github.com/indralab/mira.git /home/jupyter/mira && \
     rm -r /home/jupyter/mira
 
 # Install PyCIEMSS from GitHub
-RUN pip install --no-cache-dir pyro-ppl==1.8.6 git+https://github.com/ciemss/pyciemss.git@d6838e72bdc145b2f87ab9e33e220eb84fd87e87 --use-pep517
+RUN pip install --no-cache-dir git+https://github.com/ciemss/pyciemss.git@9aa5d8849c630e8d2b208d25464d7b006fcd4d60 --use-pep517
 
 # Install project requirements
 COPY --chown=1000:1000 pyproject.toml README.md hatch_build.py /home/jupyter/askem_beaker/
