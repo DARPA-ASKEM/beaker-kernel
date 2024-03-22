@@ -109,7 +109,7 @@ class PyCIEMSSContext(BaseContext):
     async def get_ensemble_calibrate(self, message):
         args = message.content
         args["models"] = ", ".join(self.configs)
-        args["datasets"] = self.datasets
+        args["dataset"] = self.datasets[0]
         code = self.get_code("ensemble_calibrate", args)
         self.send_response("iopub", "code_cell", {"code": code}, parent_header=message.header) 
         return code
