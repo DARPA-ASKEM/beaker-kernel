@@ -41,7 +41,7 @@ USER jupyter
 # Install Mira from github, with cache-bust
 ADD https://api.github.com/repos/DARPA-ASKEM/beaker-kernel/git/refs/heads/main bust-cache.json
 
-RUN git clone https://github.com/indralab/mira.git /home/jupyter/mira && \
+RUN git clone https://github.com/gyorilab/mira.git /home/jupyter/mira && \
     pip install --no-cache-dir /home/jupyter/mira/"[ode,tests,dkg-client,sbml]" && \
     rm -r /home/jupyter/mira
 
