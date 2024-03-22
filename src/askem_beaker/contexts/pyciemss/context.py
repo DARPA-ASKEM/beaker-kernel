@@ -28,43 +28,91 @@ class PyCIEMSSContext(BaseContext):
 
     def __init__(self, beaker_kernel: "LLMKernel", subkernel: "BaseSubkernel", config: Dict[str, Any]) -> None:
         self.auth = get_auth()
+        self.configs = []
+        self.datasets = []
         super().__init__(beaker_kernel, subkernel, self.agent_cls, config)
 
     async def setup(self, config: dict, parent_header):
         await self.execute(self.get_code("setup"))
-        if "model_config_id" in config:
-            await self.set_model_config(config["model_config_id"], parent_header=parent_header)
+        await self.set_model_configs(config["model_configs"], parent_header=parent_header)
+        await self.set_datasets(config.get("datasets", []), parent_header=parent_header)
 
-    async def set_model_config(self, config_id, agent=None, parent_header=None):
+    async def set_model_configs(self, configs, parent_header=None):
         if parent_header is None: parent_header = {}
-        self.config_id = config_id
-        meta_url = f"{os.environ['HMI_SERVER_URL']}/model-configurations/{self.config_id}"
-        self.configuration = requests.get(meta_url, 
-                                          auth=(os.environ['AUTH_USERNAME'],
-                                                os.environ['AUTH_PASSWORD'])
-                                                ).json()
-        logger.info(f"Succeeded in fetching model configuration, proceeding.")
+        for name, id in configs.items():
+            self.configs.append(name)
+            config_url = f"{os.environ['HMI_SERVER_URL']}/model-configurations/{id}"
+            configuration = requests.get(config_url,  auth=self.auth).json()
+            logger.info(f"Succeeded in fetching model configuration {id}, proceeding.")
         
-        self.amr = self.configuration.get("configuration")
-        self.schema_name = self.amr.get("header",{}).get("schema_name","petrinet")
-        self.original_amr = copy.deepcopy(self.amr)
-        command = f"model = {self.amr}"
-        print(f"Running command:\n-------\n{command}\n---------")
-        await self.execute(command)        
+            amr = configuration.get("configuration")
+            command = f"{name} = {amr}"
+            await self.execute(command)        
+    
+    async def set_datasets(self, datasets, parent_header=None):
+        if parent_header is None: parent_header = {}
+        var_to_url ={}
+        for name, id in datasets.items():
+            self.datasets.append(name)
+            dataset_url = f"{os.environ['HMI_SERVER_URL']}/datasets/{id}"
+            dataset = requests.get(dataset_url, auth=self.auth).json()
+            logger.info(f"Succeeded in fetching dataset {id}, proceeding.")
+            filename = dataset["fileNames"][0]
+            download_url = f"{dataset_url}/download-url?filename={filename}"
+            data_url_req = requests.get(
+                url=download_url,
+                auth=self.auth.requests_auth(),
+            )
+            data_url = data_url_req.json().get("url", None)
+            var_to_url[name] = data_url
+        command = self.get_code("load_df", {"var_to_url": var_to_url})
+        await self.execute(command)
+
+    @action()
+    async def get_simulate(self, message):
+        args = message.content
+        args["model"] = self.configs[0]
+        code = self.get_code("simulate", args)
+        self.send_response("iopub", "code_cell", {"code": code}, parent_header=message.header) 
+        return code
+    get_simulate._default_payload = "{}"
 
     @action()
     async def get_optimize(self, message):
-        code = self.get_code("optimize", message.content)
+        args = message.content
+        args["model"] = self.configs[0]
+        code = self.get_code("optimize", args)
         self.send_response("iopub", "code_cell", {"code": code}, parent_header=message.header) 
         return code
     get_optimize._default_payload = "{}"
 
     @action()
-    async def get_simulate(self, message):
-        code = self.get_code("simulate", message.content)
+    async def get_calibrate(self, message):
+        args = message.content
+        args["model"] = self.configs[0]
+        args["dataset"] = self.datasets[0]
+        code = self.get_code("calibrate", args)
         self.send_response("iopub", "code_cell", {"code": code}, parent_header=message.header) 
         return code
-    get_simulate._default_payload = "{}"
+    get_calibrate._default_payload = "{}"
+
+    @action()
+    async def get_ensemble_simulate(self, message):
+        args = message.content
+        args["models"] = self.configs
+        code = self.get_code("ensemble_simulate", args)
+        self.send_response("iopub", "code_cell", {"code": code}, parent_header=message.header) 
+        return code
+    get_ensemble_simulate._default_payload = "{}"
+
+    @action()
+    async def get_ensemble_calibrate(self, message):
+        args = message.content
+        args["models"] = self.configs
+        code = self.get_code("ensemble_simulate", args)
+        self.send_response("iopub", "code_cell", {"code": code}, parent_header=message.header) 
+        return code
+    get_ensemble_calibrate._default_payload = "{}"
 
     @action()
     async def save_results(self, message):
