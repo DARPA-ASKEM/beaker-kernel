@@ -1,6 +1,6 @@
 # Define needed variables in above cell(s)
 result = ensemble_sample(
-    model_path_or_jsons = {{ models }},
+    model_path_or_jsons = [{{ models }}],
     
     # Function for each model is needed
     # Each function should describe how to take the individual models states (a dict)

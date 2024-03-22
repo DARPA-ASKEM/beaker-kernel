@@ -35,14 +35,14 @@ class PyCIEMSSContext(BaseContext):
     async def setup(self, config: dict, parent_header):
         await self.execute(self.get_code("setup"))
         await self.set_model_configs(config["model_configs"], parent_header=parent_header)
-        await self.set_datasets(config.get("datasets", []), parent_header=parent_header)
+        await self.set_datasets(config.get("datasets", {}), parent_header=parent_header)
 
     async def set_model_configs(self, configs, parent_header=None):
         if parent_header is None: parent_header = {}
         for name, id in configs.items():
             self.configs.append(name)
             config_url = f"{os.environ['HMI_SERVER_URL']}/model-configurations/{id}"
-            configuration = requests.get(config_url,  auth=self.auth).json()
+            configuration = requests.get(config_url,  auth=self.auth.requests_auth()).json()
             logger.info(f"Succeeded in fetching model configuration {id}, proceeding.")
         
             amr = configuration.get("configuration")
@@ -51,11 +51,11 @@ class PyCIEMSSContext(BaseContext):
     
     async def set_datasets(self, datasets, parent_header=None):
         if parent_header is None: parent_header = {}
-        var_to_url ={}
+        name_to_url = {}
         for name, id in datasets.items():
             self.datasets.append(name)
             dataset_url = f"{os.environ['HMI_SERVER_URL']}/datasets/{id}"
-            dataset = requests.get(dataset_url, auth=self.auth).json()
+            dataset = requests.get(dataset_url, auth=self.auth.requests_auth()).json()
             logger.info(f"Succeeded in fetching dataset {id}, proceeding.")
             filename = dataset["fileNames"][0]
             download_url = f"{dataset_url}/download-url?filename={filename}"
@@ -64,8 +64,8 @@ class PyCIEMSSContext(BaseContext):
                 auth=self.auth.requests_auth(),
             )
             data_url = data_url_req.json().get("url", None)
-            var_to_url[name] = data_url
-        command = self.get_code("load_df", {"var_to_url": var_to_url})
+            name_to_url[name] = data_url
+        command = self.get_code("load_df", {"name_to_url": name_to_url})
         await self.execute(command)
 
     @action()
@@ -99,7 +99,7 @@ class PyCIEMSSContext(BaseContext):
     @action()
     async def get_ensemble_simulate(self, message):
         args = message.content
-        args["models"] = self.configs
+        args["models"] = ", ".join(self.configs)
         code = self.get_code("ensemble_simulate", args)
         self.send_response("iopub", "code_cell", {"code": code}, parent_header=message.header) 
         return code
@@ -108,7 +108,8 @@ class PyCIEMSSContext(BaseContext):
     @action()
     async def get_ensemble_calibrate(self, message):
         args = message.content
-        args["models"] = self.configs
+        args["models"] = ", ".join(self.configs)
+        args["datasets"] = self.datasets
         code = self.get_code("ensemble_simulate", args)
         self.send_response("iopub", "code_cell", {"code": code}, parent_header=message.header) 
         return code

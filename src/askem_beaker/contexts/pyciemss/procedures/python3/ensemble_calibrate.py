@@ -1,8 +1,8 @@
 # Define needed variables in above cell(s)
 
 result = ensemble_calibrate(
-    model_path_or_jsons = {{ models }},
-    data_paths = {{ datasets }}
+    model_path_or_jsons = [{{ models }}],
+    data_paths = [{{ datasets }}]
 
     # Map the columns of the data to the model states
     data_mapping = {}
