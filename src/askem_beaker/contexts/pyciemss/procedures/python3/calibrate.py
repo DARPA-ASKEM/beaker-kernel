@@ -3,7 +3,7 @@
 
 result = calibrate(
     model_path_or_json = {{ model }},
-    data_path = {{ dataset }}
+    data_path = "{{ dataset }}"
     data_mapping = {}
     start_time = {{ start_time | default("0.0")}},
     logging_step_size = {{ logging_step_size | default("1.0")}},

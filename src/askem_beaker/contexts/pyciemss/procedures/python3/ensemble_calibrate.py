@@ -2,7 +2,7 @@
 
 result = ensemble_calibrate(
     model_path_or_jsons = [{{ models }}],
-    data_paths = [{{ datasets }}]
+    data_paths = {{ datasets }}
 
     # Map the columns of the data to the model states
     data_mapping = {}

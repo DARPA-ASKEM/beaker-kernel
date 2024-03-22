@@ -110,7 +110,7 @@ class PyCIEMSSContext(BaseContext):
         args = message.content
         args["models"] = ", ".join(self.configs)
         args["datasets"] = self.datasets
-        code = self.get_code("ensemble_simulate", args)
+        code = self.get_code("ensemble_calibrate", args)
         self.send_response("iopub", "code_cell", {"code": code}, parent_header=message.header) 
         return code
     get_ensemble_calibrate._default_payload = "{}"
