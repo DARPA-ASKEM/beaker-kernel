@@ -27,6 +27,7 @@ class DecapodesContext(BaseContext):
     def __init__(self, beaker_kernel: "LLMKernel", subkernel: "BaseSubkernel", config: Dict[str, Any]) -> None:
         self.target = "decapode"
         self.auth = get_auth()
+        self.datasets = []
         self.reset()
         super().__init__(beaker_kernel, subkernel, self.agent_cls, config)
 
@@ -43,7 +44,7 @@ class DecapodesContext(BaseContext):
             return model
 
         variables = {
-            var_name: fetch_model(decapode_id) for var_name, decapode_id in config.items()
+            var_name: fetch_model(decapode_id) for var_name, decapode_id in config.get("models", {}).items()
         }
 
         command = "\n".join(
@@ -56,7 +57,27 @@ class DecapodesContext(BaseContext):
         )
         print(f"Running command:\n-------\n{command}\n---------")
         await self.execute(command)
+        await self.set_datasets(config.get("datasets", {}), parent_header=parent_header)
         print("Decapodes creation environment set up")
+
+    async def set_datasets(self, datasets, parent_header=None):
+        if parent_header is None: parent_header = {}
+        var_map = {}
+        for name, id in datasets.items():
+            self.datasets.append(name)
+            dataset_url = f"{os.environ['HMI_SERVER_URL']}/datasets/{id}"
+            dataset = requests.get(dataset_url, auth=self.auth.requests_auth()).json()
+            logger.info(f"Succeeded in fetching dataset {id}, proceeding.")
+            filename = dataset["fileNames"][0]
+            download_url = f"{dataset_url}/download-url?filename={filename}"
+            data_url_req = requests.get(
+                url=download_url,
+                auth=self.auth.requests_auth(),
+            )
+            data_url = data_url_req.json().get("url", None)
+            var_map[name] = data_url
+        command = self.get_code("load_df", {"var_map": var_map})
+        await self.execute(command)
 
 
     async def post_execute(self, message):
