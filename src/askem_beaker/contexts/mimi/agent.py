@@ -92,64 +92,43 @@ class Toolset:
         return response["return"]
 
 
-    # @tool(autosummarize=True)
-    # async def get_available_functions(self, package_name: str, agent: AgentRef):
-    #     """
-    #     Querying against the module should list all exported functions in that module, so you can use this to discover available
-    #     functions and the query the function to get usage information.
+    @tool(autosummarize=True)
+    async def get_function_docstring(self, function_name: str, agent: AgentRef):
+        """
+        Use this tool to additional information on individual function such as their inputs, outputs and descrption (and generally anything else that would be in a docstring)
         
-    #     This function should be used to discover the available functions in the target library or module and get an object containing their docstrings so you can figure out how to use them.
-
-    #     Read the docstrings to learn how to use the functions and which arguments they take.
-
-    #     Args:
-    #         package_name (str): this is the name of the package to get the function docs from.
-    #     """
-    #     functions = {}
-
-    #     code = agent.context.get_code("info", {"module": package_name})
-
-    #     response = await agent.context.beaker_kernel.evaluate(
-    #         code,
-    #         parent_header={},
-    #     )
-    #     functions = response["return"]
-    #     agent.context.functions.update(functions)
-    #     help_string=''
-    #     for name, help_text in functions.items():
-    #         help_string+=f'{name}: {help_text}'
-    #         agent.context.functions[name]=help_text
-        return help_string
-
-
-#     @tool(autosummarize=True)
-#     async def get_functions_docstring(self, list_of_function_names: list, agent: AgentRef):
-#         """
-#         Use this tool to additional information on individual function such as their inputs, outputs and description (and generally anything else that would be in a docstring)
-#         You should ALWAYS use this tool before writing or checking code to check the function signatures of the functions you are about to use.
+        Read the information returned to learn how to use the function and which arguments they take.
         
-#         Read the information returned to learn how to use the function and which arguments they take.
-        
-#         The function names used in the input to this tool should include the entire module hierarchy
-        
-#         Args:
-#             list_of_function_names (list): this is a list of the the names of the functions and/or classes to get information about. 
-#         """
-#         #TODO: figure out cause of this and remove ugly filter
-#         if type(list_of_function_names)==dict:
-#             list_of_function_names=list_of_function_names['list_of_function_names']
+        The function names used in the input to this tool should include the entire module hierarchy
 
-#         code = self.agent.get_code("info", {"from_module": "false", "function_names": ",".join(list_of_function_names)})
-#         response = await self.agent.context.beaker_kernel.evaluate(
-#             code,
-#             parent_header={},
-#         )
-#         functions = response["return"]
-#         help_string=''
-#         for name, help_text in functions.items():
-#             help_string+=f'{name}: {help_text}'
-#             agent.context.functions[name]=help_text
-#         return help_string
+        If this fails, this means the function does not exist.
+        
+        Args:
+            function_name (str): name of the function to lookup. 
+        """
+        code = f"""
+            import DisplayAs, JSON3
+            try {function_name} 
+            catch 
+                DisplayAs.unlimited(
+                    JSON3.write(
+                        Dict("docs" => "{function_name} not defined")
+                    )
+                )
+            else
+                docstring = string(@doc({function_name}))
+                doc_object = Dict("docs" => docstring)
+                DisplayAs.unlimited(
+                    JSON3.write(doc_object)
+                )
+            end
+        """
+        response = await agent.context.beaker_kernel.evaluate(
+            code,
+            parent_header={},
+        )
+        docs = response["return"]["docs"]
+        return docs
 
 
 class Agent(NewBaseAgent):
