@@ -92,34 +92,33 @@ class Toolset:
         return response["return"]
 
 
-    @tool(autosummarize=True)
-    async def get_available_functions(self, package_name: str, agent: AgentRef):
-        """
-        Querying against the module should list all exported functions in that module, so you can use this to discover available
-        functions and the query the function to get usage information.
+    # @tool(autosummarize=True)
+    # async def get_available_functions(self, package_name: str, agent: AgentRef):
+    #     """
+    #     Querying against the module should list all exported functions in that module, so you can use this to discover available
+    #     functions and the query the function to get usage information.
         
-        This function should be used to discover the available functions in the target library or module and get an object containing their docstrings so you can figure out how to use them.
+    #     This function should be used to discover the available functions in the target library or module and get an object containing their docstrings so you can figure out how to use them.
 
-        Read the docstrings to learn how to use the functions and which arguments they take.
+    #     Read the docstrings to learn how to use the functions and which arguments they take.
 
-        Args:
-            package_name (str): this is the name of the package to get the function docs from.
-        """
-        functions = {}
+    #     Args:
+    #         package_name (str): this is the name of the package to get the function docs from.
+    #     """
+    #     functions = {}
 
-        code = agent.context.get_code("info", {"module": package_name})
+    #     code = agent.context.get_code("info", {"module": package_name})
 
-        response = await agent.context.beaker_kernel.evaluate(
-            code,
-            parent_header={},
-        )
-        functions = response["return"]
-        agent.context.functions.update(functions)
-        help_string=''
-        for name, help_text in functions.items():
-            logger.error("\n\nll\n\n\n")
-            help_string+=f'{name}: {help_text}'
-            agent.context.functions[name]=help_text
+    #     response = await agent.context.beaker_kernel.evaluate(
+    #         code,
+    #         parent_header={},
+    #     )
+    #     functions = response["return"]
+    #     agent.context.functions.update(functions)
+    #     help_string=''
+    #     for name, help_text in functions.items():
+    #         help_string+=f'{name}: {help_text}'
+    #         agent.context.functions[name]=help_text
         return help_string
 
 
