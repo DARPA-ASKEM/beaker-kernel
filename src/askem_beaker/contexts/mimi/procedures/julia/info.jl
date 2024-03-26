@@ -10,12 +10,12 @@ _chosen_funcs_str = {{ function_names | default("[]") }}
 _function_names = 
     if _from_module
         _module_names = 
-            if !isnothing(selected_module)
+            if !isnothing(_selected_module)
                 filter(x -> in(x, _IGNORED_SYMBOLS) && isa(x, Module), names(Main))
             else
                 _selected_module
             end
-        filter(!in(_modules_names), reduce(vcat, [names(mod) for mod in _module_names]))
+        filter(!in(_module_names), reduce(vcat, [names(mod) for mod in _module_names]; init=[]))
     else
         split(_chosen_func_str, ",")
     end
