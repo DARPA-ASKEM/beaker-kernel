@@ -1,8 +1,8 @@
 # Define needed variables in above cell(s)
-model # Selected model is loaded as a dictionary 
+{{ model }} # Selected model is loaded as a dictionary 
 
 result = optimize(
-    model_path_or_json = model,
+    model_path_or_json = {{ model }},
 
     # Interventions
     static_parameter_interventions = param_value_objective({{ param_names | default("[]") }}, [torch.tensor({{ start_time | default("0.0")}})]),
