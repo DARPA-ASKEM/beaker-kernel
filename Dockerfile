@@ -37,6 +37,9 @@ RUN ln -sf /usr/local/julia/bin/julia /usr/local/bin/julia
 RUN useradd -m jupyter
 USER jupyter
 
+# Install PyCIEMSS from GitHub
+RUN pip install --no-cache-dir git+https://github.com/ciemss/pyciemss.git@9aa5d8849c630e8d2b208d25464d7b006fcd4d60 --use-pep517
+
 
 # Install Mira from github, with cache-bust
 ADD https://api.github.com/repos/DARPA-ASKEM/beaker-kernel/git/refs/heads/main bust-cache.json
@@ -45,8 +48,6 @@ RUN git clone https://github.com/indralab/mira.git /home/jupyter/mira && \
     pip install --no-cache-dir /home/jupyter/mira/"[ode,tests,dkg-client,sbml]" && \
     rm -r /home/jupyter/mira
 
-# Install PyCIEMSS from GitHub
-RUN pip install --no-cache-dir git+https://github.com/ciemss/pyciemss.git@9aa5d8849c630e8d2b208d25464d7b006fcd4d60 --use-pep517
 
 # Install project requirements
 COPY --chown=1000:1000 pyproject.toml README.md hatch_build.py /home/jupyter/askem_beaker/
