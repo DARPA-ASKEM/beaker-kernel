@@ -190,6 +190,22 @@ class Context(BaseContext):
             },
         )
 
+    async def generate_preview(self):
+        """
+        Preview renders of mira models.
+        """
+        code_block = self.get_code(
+            "visualize_mira_models",
+            {
+                "model_vars": self.loaded_models,
+            },
+        )
+        result = await self.beaker_kernel.evaluate(code_block)
+        models = result.get("return", None)
+        return {
+            "Mira Models": models,
+        }
+
     async def auto_context(self):
         from .lib.utils import query_examples
 
