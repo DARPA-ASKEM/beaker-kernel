@@ -93,6 +93,21 @@ class MiraConfigEditContext(BaseContext):
         except Exception as e:
             raise
 
+    async def template_params(self) -> str:
+        """
+        Obtain the `template_params` which define the relationships between the model configuration parameters, particularly for contact matrix
+        parameters.
+
+        This should be used to answer questions about which parameters to update.
+
+
+        Returns:
+            str: a JSON representation of the parameter interactions
+        """
+        template_params = (
+            await self.evaluate(self.get_code("template_params")))["return"]
+        return json.dumps(template_params, indent=2)
+
     @intercept()
     async def save_model_config_request(self, message):
         '''
