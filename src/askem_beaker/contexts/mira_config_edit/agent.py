@@ -30,7 +30,6 @@ class MiraConfigEditAgent(BaseAgent):
     }
 
     Instead of manipulating the model directly, the agent will always return code that will be run externally in a jupyter notebook.
-
     """
 
     def __init__(self, context: BaseContext = None, tools: list = None, **kwargs):
@@ -89,16 +88,11 @@ class MiraConfigEditAgent(BaseAgent):
             }
         )
 
-    @tool()
-    async def inspect_parameters(self, query: str, agent: AgentRef, loop: LoopControllerRef):
+    @tool(autosummarize=True)
+    async def identify_matrix_parameters(self, query: str, agent: AgentRef, loop: LoopControllerRef):
         """
         This tool is used when a user wants to determine which parameters to update for a complex parameter that is part of an interaction matrix.
         
-        Please generate the code as if you were programming inside a Jupyter Notebook and the code is to be executed inside a cell.
-        You MUST wrap the code with a line containing three backticks (```) before and after the generated code.
-        No addtional text is needed in the response, just the code block.   
-
-
         Args:
             query (str): A fully grammatically correct question about the model parameters
         """
@@ -126,36 +120,25 @@ For example:
 "controllers": ["I_old"]}}}}
 ```
 
+If two compartments are seen together in the same template `t*` where one is a `subject` and the other is an `outcome`
+it means there is an interaction between them. In that case, the parameters which govern the interaction are defined in `params`. 
 Here we see that in `t1` or template 1, the `S_middle` and `E_middle` compartments or state variables have an interaction over the parameters: ["me", "mc", "beta", "C_0", "N"].
 So, if you are asked to update the value for the `C` parameter between `S_middle` and `E_middle` you would know to update `C_0` but not `C_2` since
-that governs interactions between `S_old` and `E_old`.
+that governs interactions between `S_old` and `E_old`. 
 
 In many cases you may be simply asked to update certain specific parameters, but otherwise you will need to rely on information from the parameter
 relationships provided to infer which parameters actually need to be updated.
 
-In your thoughts please describe which parameters you have selected and why you chose them, then craft the code to perform the update.
-The code to update the parameters should look something like this:
-
-```
-model_config.parameters[kk].value = vv
-```
-
-where `kk` is the parameter name and `vv` is the value to be updated. You MUST use this template to perform the parameter value update.
-
-Please generate the code as if you were programming inside a Jupyter Notebook and the code is to be executed inside a cell.
-
-You MUST wrap the code with a line containing three backticks (```) before and after the generated code.
-No addtional text is needed in the response, just the code block.
+Please describe which parameters you have selected and why you chose them. You MUST always describe your decision process and how you determined you have selected
+the correct parameters.
 """
 
         llm_response = await agent.oneshot(prompt=prompt, query=query)
-        loop.set_state(loop.STOP_SUCCESS)
-        preamble, code, coda = re.split("```\w*", llm_response)
+        loop.set_state(loop.PROCEED)
         result = json.dumps(
             {
-                "action": "code_cell",
-                "language": "python3",
-                "content": code.strip(),
+                "action": "llm_thought",
+                "content": llm_response,
             }
         )
         return result
