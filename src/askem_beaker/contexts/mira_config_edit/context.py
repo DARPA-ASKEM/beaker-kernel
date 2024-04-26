@@ -108,6 +108,23 @@ class MiraConfigEditContext(BaseContext):
             await self.evaluate(self.get_code("template_params")))["return"]
         return json.dumps(template_params, indent=2)
 
+    async def model_structure(self) -> str:
+        """
+        Inspect the model and return information and metadata about it.
+
+        This should be used to answer questions about the model, including information about the states, populations, transistions, etc.
+
+
+        Returns:
+            str: a textual representation of the model
+        """
+        # Update the local dataframe to match what's in the shell.
+        # This will be factored out when we switch around to allow using multiple runtimes.
+        amr = (
+            await self.evaluate(self.get_code("model_to_json", {"var_name": self.var_name, "schema_name": self.schema_name}))
+        )["return"]
+        return json.dumps(amr, indent=2)        
+
     @intercept()
     async def save_model_config_request(self, message):
         '''
