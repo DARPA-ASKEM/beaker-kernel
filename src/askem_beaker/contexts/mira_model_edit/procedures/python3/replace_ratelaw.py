@@ -1,4 +1,4 @@
-def replace_rate_law_sympy(model, template_name: str, new_rate_law):
+def replace_rate_law_sympy(model, template_name: str, new_rate_law, local_dict=None):
     """Replace the rate law of transition. The new rate law passed in will be a sympy.Expr object
 
     Parameters
@@ -10,19 +10,19 @@ def replace_rate_law_sympy(model, template_name: str, new_rate_law):
         typically the name of the transition
     new_rate_law :
         The new rate law to replace the existing rate law with
+    local_dict :
+        A dictionary of local variables to use when parsing.
 
     Returns
     -------
     :
         The updated model as an AMR JSON
     """
-    # NOTE: this assumes that a sympy expression object is given
-    # though it might make sense to take a string instead
     assert isinstance(model, TemplateModel)
     tm = model
     for template in tm.templates:
         if template.name == template_name:
-            template.rate_law = SympyExprStr(new_rate_law)
+            template.set_rate_law(rate_law, local_dict=local_dict)
     return tm
 
 model = replace_rate_law_sympy(model, "{{ template_name }}", "{{ new_rate_law }}")
