@@ -46,7 +46,7 @@ class Toolset:
             str: List of modules that can be installed using Pkg.add
         """
         code = agent.context.get_code("search_packages", {"module": name})
-        response = await agent.context.beaker_kernel.evaluate(
+        response = await agent.context.evaluate(
             code,
             parent_header={},
         )
@@ -67,7 +67,7 @@ class Toolset:
             dict: Information about the Mimi Model  
         """
         code = agent.context.get_code("model_info", {"model": model_var_name})
-        response = await agent.context.beaker_kernel.evaluate(
+        response = await agent.context.evaluate(
             code,
             parent_header={},
         )
@@ -85,50 +85,50 @@ class Toolset:
             str: Markdown of the module docs
         """
         code = agent.context.get_code("get_module_docs", {"module": package_name})
-        response = await agent.context.beaker_kernel.evaluate(
+        response = await agent.context.evaluate(
             code,
             parent_header={},
         )
         return response["return"]
 
 
-    @tool(autosummarize=True)
-    async def get_function_docstring(self, function_name: str, agent: AgentRef):
-        """
-        Use this tool to additional information on individual function such as their inputs, outputs and descrption (and generally anything else that would be in a docstring)
+    # @tool(autosummarize=True)
+    # async def get_function_docstring(self, function_name: str, agent: AgentRef):
+    #     """
+    #     Use this tool to additional information on individual function such as their inputs, outputs and descrption (and generally anything else that would be in a docstring)
         
-        Read the information returned to learn how to use the function and which arguments they take.
+    #     Read the information returned to learn how to use the function and which arguments they take.
         
-        The function names used in the input to this tool should include the entire module hierarchy
+    #     The function names used in the input to this tool should include the entire module hierarchy
 
-        If this fails, this means the function does not exist.
+    #     If this fails, this means the function does not exist.
         
-        Args:
-            function_name (str): name of the function to lookup. 
-        """
-        code = f"""
-            import DisplayAs, JSON3
-            try {function_name} 
-            catch 
-                DisplayAs.unlimited(
-                    JSON3.write(
-                        Dict("docs" => "{function_name} not defined")
-                    )
-                )
-            else
-                docstring = string(@doc({function_name}))
-                doc_object = Dict("docs" => docstring)
-                DisplayAs.unlimited(
-                    JSON3.write(doc_object)
-                )
-            end
-        """
-        response = await agent.context.beaker_kernel.evaluate(
-            code,
-            parent_header={},
-        )
-        docs = response["return"]["docs"]
-        return docs
+    #     Args:
+    #         function_name (str): name of the function to lookup. 
+    #     """
+    #     code = f"""
+    #         import DisplayAs, JSON3
+    #         try {function_name} 
+    #         catch 
+    #             DisplayAs.unlimited(
+    #                 JSON3.write(
+    #                     Dict("docs" => "{function_name} not defined")
+    #                 )
+    #             )
+    #         else
+    #             docstring = string(@doc({function_name}))
+    #             doc_object = Dict("docs" => docstring)
+    #             DisplayAs.unlimited(
+    #                 JSON3.write(doc_object)
+    #             )
+    #         end
+    #     """
+    #     response = await agent.context.beaker_kernel.evaluate(
+    #         code,
+    #         parent_header={},
+    #     )
+    #     docs = response["return"]["docs"]
+    #     return docs
 
 
 class Agent(NewBaseAgent):

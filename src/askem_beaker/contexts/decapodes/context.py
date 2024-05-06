@@ -10,6 +10,7 @@ from beaker_kernel.lib.utils import action
 
 from .agent import DecapodesAgent
 from askem_beaker.utils import get_auth
+from beaker_kernel.lib.subkernels.julia import JuliaSubkernel
 
 if TYPE_CHECKING:
     from beaker_kernel.kernel import LLMKernel
@@ -24,15 +25,18 @@ class DecapodesContext(BaseContext):
 
     agent_cls = DecapodesAgent
 
-    def __init__(self, beaker_kernel: "LLMKernel", subkernel: "BaseSubkernel", config: Dict[str, Any]) -> None:
+    def __init__(self, beaker_kernel: "LLMKernel", language: str, config: Dict[str, Any]) -> None:
         self.target = "decapode"
         self.auth = get_auth()
         self.reset()
-        super().__init__(beaker_kernel, subkernel, self.agent_cls, config)
+        super().__init__(beaker_kernel, language, self.agent_cls, config)
+        if not isinstance(self.subkernel, JuliaSubkernel):
+            raise ValueError("This context is only valid for Julia.")
+        
 
 
     async def setup(self, config, parent_header):
-        self.config = config
+        self.config.update(config)
 
         def fetch_model(model_id):
             meta_url = f"{os.environ['HMI_SERVER_URL']}/models/{model_id}"
