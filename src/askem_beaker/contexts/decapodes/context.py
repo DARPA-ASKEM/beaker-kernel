@@ -47,7 +47,7 @@ class DecapodesContext(BaseContext):
             return model
 
         variables = {
-            var_name: fetch_model(decapode_id) for var_name, decapode_id in config.items()
+            var_name: fetch_model(decapode_id) for var_name, decapode_id in context_info.items()
         }
 
         command = "\n".join(
