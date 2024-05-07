@@ -56,11 +56,11 @@ class MiraContext(BaseContext):
         if not isinstance(self.subkernel, PythonSubkernel):
             raise ValueError("This context is only valid for Python.")
 
-    async def setup(self, config, parent_header):
-        self.config = config
+    async def setup(self, context_info, parent_header):
+        self.config["context_info"] = context_info
         self.auth_details = (os.environ.get("AUTH_USERNAME", ""), os.environ.get("AUTH_PASSWORD", ""))
         self.loaded_models = []
-        for item in self.config.get("models", []):
+        for item in self.config["context_info"].get("models", []):
             name = item.get("name", None)
             model_id = item.get("model_id", None)
             self.loaded_models.append(name)
