@@ -26,13 +26,12 @@ class ClimateDataUtilityContext(BaseContext):
     def __init__(
         self,
         beaker_kernel: "LLMKernel",
-        language: str,
         config: Dict[str, Any],
     ) -> None:
         self.climate_data_utility__functions = {}
         self.config = config
         self.dataset_map = {}
-        super().__init__(beaker_kernel, language, self.agent_cls, config)
+        super().__init__(beaker_kernel, self.agent_cls, config)
         if not isinstance(self.subkernel, PythonSubkernel):
             raise ValueError("This context is only valid for Python.")
 

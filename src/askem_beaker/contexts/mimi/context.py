@@ -24,7 +24,6 @@ class MimiContext(BaseContext):
     def __init__(
         self,
         beaker_kernel: "LLMKernel",
-        language: str, 
         config: Dict[str, Any],
     ) -> None:
         self.library_name="Mimi.jl"
@@ -37,7 +36,7 @@ class MimiContext(BaseContext):
         self.few_shot_examples=''
         self.code_blocks=[] #{'code':str,'execution_status':not_executed,executed_successfully,'execution_order':int,'output':output from running code block most recent time.}
         self.code_block_print='\n\n'.join([f'Code Block[{i}]: {self.code_blocks[i]["code"]}\nExecution Status:{self.code_blocks[i]["execution_status"]}\nExecution Order:{self.code_blocks[i]["execution_order"]}\nCode Block Output or Error:{self.code_blocks[i]["output"]}' for i in range(len(self.code_blocks))])
-        super().__init__(beaker_kernel, language, self.agent_cls, config)
+        super().__init__(beaker_kernel, self.agent_cls, config)
         
     async def render_code(self, message, code):
         self.send_response("iopub", "code_cell", {"code": code}, parent_header=message.header)

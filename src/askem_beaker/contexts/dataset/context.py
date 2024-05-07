@@ -25,10 +25,10 @@ class DatasetContext(BaseContext):
 
     agent_cls: "BaseAgent" = DatasetAgent
 
-    def __init__(self, beaker_kernel: "LLMKernel", language: str, config: Dict[str, Any]) -> None:
+    def __init__(self, beaker_kernel: "LLMKernel", config: Dict[str, Any]) -> None:
         self.auth = get_auth()
         self.asset_map = {}
-        super().__init__(beaker_kernel, language, self.agent_cls, config)
+        super().__init__(beaker_kernel, self.agent_cls, config)
 
     async def setup(self, config: dict, parent_header):
         self.config = config

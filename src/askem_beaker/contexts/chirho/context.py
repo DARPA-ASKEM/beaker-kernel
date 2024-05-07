@@ -26,7 +26,6 @@ class ChirhoContext(BaseContext): #to change dynamically on new context creation
     def __init__(
         self,
         beaker_kernel: "LLMKernel",
-        language: str,
         config: Dict[str, Any],
     ) -> None:
         self.functions = {}
@@ -43,7 +42,7 @@ class ChirhoContext(BaseContext): #to change dynamically on new context creation
             "library_names": ["chirho"],
             "task_description": "Causal Reasoning"
         }
-        super().__init__(beaker_kernel, language, self.agent_cls, config)
+        super().__init__(beaker_kernel, self.agent_cls, config)
         if not isinstance(self.subkernel, PythonSubkernel):
             raise ValueError("This context is only valid for Python.")
         

@@ -25,11 +25,11 @@ class DecapodesContext(BaseContext):
 
     agent_cls = DecapodesAgent
 
-    def __init__(self, beaker_kernel: "LLMKernel", language: str, config: Dict[str, Any]) -> None:
+    def __init__(self, beaker_kernel: "LLMKernel", config: Dict[str, Any]) -> None:
         self.target = "decapode"
         self.auth = get_auth()
         self.reset()
-        super().__init__(beaker_kernel, language, self.agent_cls, config)
+        super().__init__(beaker_kernel, self.agent_cls, config)
         if not isinstance(self.subkernel, JuliaSubkernel):
             raise ValueError("This context is only valid for Julia.")
         

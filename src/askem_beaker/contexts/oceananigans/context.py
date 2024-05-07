@@ -23,10 +23,10 @@ class OceananigansContext(BaseContext):
     slug = "oceananigans"
     agent_cls = OceananigansAgent
 
-    def __init__(self, beaker_kernel: "LLMKernel", language: str, config: Dict[str, Any]) -> None:
+    def __init__(self, beaker_kernel: "LLMKernel", config: Dict[str, Any]) -> None:
         self.target = "oceananigan"
         self.reset()
-        super().__init__(beaker_kernel, language, self.agent_cls, config)
+        super().__init__(beaker_kernel, self.agent_cls, config)
 
 
     async def setup(self, config, parent_header):

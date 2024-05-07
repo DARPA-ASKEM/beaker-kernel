@@ -26,9 +26,9 @@ class PyCIEMSSContext(BaseContext):
 
     agent_cls: "BaseAgent" = PyCIEMSSAgent
 
-    def __init__(self, beaker_kernel: "LLMKernel", language: str, config: Dict[str, Any]) -> None:
+    def __init__(self, beaker_kernel: "LLMKernel", config: Dict[str, Any]) -> None:
         self.auth = get_auth()
-        super().__init__(beaker_kernel, language, self.agent_cls, config)
+        super().__init__(beaker_kernel, self.agent_cls, config)
 
     async def setup(self, config: dict, parent_header):
         await self.execute(self.get_code("setup"))

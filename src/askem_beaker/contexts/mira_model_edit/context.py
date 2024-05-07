@@ -31,10 +31,10 @@ class MiraModelEditContext(BaseContext):
 	var_name: Optional[str] = "model"
 	schema_name: Optional[str] = "petrinet"
 
-	def __init__(self, beaker_kernel: "LLMKernel", language: str, config: Dict[str, Any]) -> None:
+	def __init__(self, beaker_kernel: "LLMKernel", config: Dict[str, Any]) -> None:
 		self.reset()
 		self.auth = get_auth()
-		super().__init__(beaker_kernel, language, self.agent_cls, config)
+		super().__init__(beaker_kernel, self.agent_cls, config)
     
 	async def setup(self, config, parent_header):
 		logger.debug(f"performing setup...")

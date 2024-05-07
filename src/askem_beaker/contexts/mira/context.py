@@ -31,7 +31,6 @@ class MiraContext(BaseContext):
     def __init__(
         self,
         beaker_kernel: "LLMKernel",
-        language: str,
         config: Dict[str, Any],
     ) -> None:
         self.context_conf = json.loads(CONTEXT_JSON)
@@ -53,7 +52,7 @@ class MiraContext(BaseContext):
         )
         self.amrs = {}
 
-        super().__init__(beaker_kernel, language, self.agent_cls, config)
+        super().__init__(beaker_kernel, self.agent_cls, config)
         if not isinstance(self.subkernel, PythonSubkernel):
             raise ValueError("This context is only valid for Python.")
 
