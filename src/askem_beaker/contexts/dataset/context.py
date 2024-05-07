@@ -31,7 +31,7 @@ class DatasetContext(BaseContext):
         super().__init__(beaker_kernel, self.agent_cls, config)
 
     async def setup(self, context_info: dict, parent_header):
-        self.config = context_info
+        self.config["context_info"] = context_info
         await self.set_assets(self.config["context_info"], parent_header=parent_header)
 
     async def post_execute(self, message):
