@@ -30,10 +30,11 @@ class PyCIEMSSContext(BaseContext):
         self.auth = get_auth()
         super().__init__(beaker_kernel, self.agent_cls, config)
 
-    async def setup(self, config: dict, parent_header):
+    async def setup(self, context_info: dict, parent_header):
+        self.config["context_info"] = context_info
         await self.execute(self.get_code("setup"))
-        if "model_config_id" in config:
-            await self.set_model_config(config["model_config_id"], parent_header=parent_header)
+        if "model_config_id" in context_info:
+            await self.set_model_config(context_info["model_config_id"], parent_header=parent_header)
 
     async def set_model_config(self, config_id, agent=None, parent_header=None):
         if parent_header is None: parent_header = {}

@@ -36,11 +36,11 @@ class MiraModelEditContext(BaseContext):
 		self.auth = get_auth()
 		super().__init__(beaker_kernel, self.agent_cls, config)
     
-	async def setup(self, config, parent_header):
+	async def setup(self, context_info, parent_header):
 		logger.debug(f"performing setup...")
-		self.config = config
-		item_id = config["id"]
-		item_type = config.get("type", "model")
+		self.context_info = context_info
+		item_id = context_info["id"]
+		item_type = context_info.get("type", "model")
 		print(f"Processing {item_type} AMR {item_id} as a MIRA model")
 		await self.set_model(
 			item_id, item_type, parent_header=parent_header

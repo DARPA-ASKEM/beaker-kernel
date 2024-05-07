@@ -30,9 +30,9 @@ class DatasetContext(BaseContext):
         self.asset_map = {}
         super().__init__(beaker_kernel, self.agent_cls, config)
 
-    async def setup(self, config: dict, parent_header):
-        self.config = config
-        await self.set_assets(self.config, parent_header=parent_header)
+    async def setup(self, context_info: dict, parent_header):
+        self.config = context_info
+        await self.set_assets(self.config["context_info"], parent_header=parent_header)
 
     async def post_execute(self, message):
         await self.update_asset_map(parent_header=message.parent_header)

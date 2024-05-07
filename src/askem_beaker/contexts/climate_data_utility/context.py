@@ -38,9 +38,9 @@ class ClimateDataUtilityContext(BaseContext):
     def get_auth(self) -> tuple[str, str]:
         return (os.getenv("AUTH_USERNAME", ""), os.getenv("AUTH_PASSWORD", ""))
 
-    async def setup(self, config, parent_header):
-        self.config = config
-        for name, dataset in self.config.items():
+    async def setup(self, context_info, parent_header):
+        self.config["context_info"] = context_info 
+        for name, dataset in self.config["context_info"].items():
             dataset_id = dataset.get("hmi_dataset_id", None)
             filename = dataset.get("filename", None)
             if dataset_id is None or filename is None:

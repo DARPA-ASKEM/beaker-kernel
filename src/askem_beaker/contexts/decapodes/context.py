@@ -35,8 +35,8 @@ class DecapodesContext(BaseContext):
         
 
 
-    async def setup(self, config, parent_header):
-        self.config.update(config)
+    async def setup(self, context_info, parent_header):
+        self.config["context_info"] = context_info
 
         def fetch_model(model_id):
             meta_url = f"{os.environ['HMI_SERVER_URL']}/models/{model_id}"
