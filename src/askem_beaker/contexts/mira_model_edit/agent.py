@@ -451,3 +451,32 @@ class MiraModelEditAgent(BaseAgent):
                 "content": code.strip(),
             }
         )
+
+    @tool()
+    async def replace_ratelaw(self,
+        template_name: str,
+        new_rate_law: str,
+        agent: AgentRef, loop: LoopControllerRef
+    ):
+        """
+        This tool is used when a user wants to replace a ratelaw.
+
+        An example of this would be "change rate law of inf to S * I * z"
+        Where inf is the template_name and "S * I * z" is the new_rate_law
+
+        Args:
+            template_name (str): This is the name of the template that has the rate law.
+            new_rate_law (str): This is the mathematical expression used to determine the rate law.
+        """
+        code = agent.context.get_code("replace_ratelaw", {
+            "template_name": template_name,
+            "new_rate_law": new_rate_law
+        })
+        loop.set_state(loop.STOP_SUCCESS)
+        return json.dumps( 
+            {
+                "action": "code_cell",
+                "language": "python3",
+                "content": code.strip(),
+            }
+        )
