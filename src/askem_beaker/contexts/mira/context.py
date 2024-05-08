@@ -24,19 +24,16 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-class Context(BaseContext):
+class MiraContext(BaseContext):
     slug = "mira"
     agent_cls = Agent
 
     def __init__(
         self,
         beaker_kernel: "LLMKernel",
-        subkernel: "BaseSubkernel",
         config: Dict[str, Any],
     ) -> None:
         self.context_conf = json.loads(CONTEXT_JSON)
-        if not isinstance(subkernel, PythonSubkernel):
-            raise ValueError("This context is only valid for Python.")
         self.library_name = self.context_conf.get("library_names", "a Jupyter notebook")[0]
         self.sub_module_description = self.context_conf.get("library_submodule_descriptions", "")[0]
         self.functions = {}
@@ -55,13 +52,15 @@ class Context(BaseContext):
         )
         self.amrs = {}
 
-        super().__init__(beaker_kernel, subkernel, self.agent_cls, config)
+        super().__init__(beaker_kernel, self.agent_cls, config)
+        if not isinstance(self.subkernel, PythonSubkernel):
+            raise ValueError("This context is only valid for Python.")
 
-    async def setup(self, config, parent_header):
-        self.config = config
+    async def setup(self, context_info, parent_header):
+        self.config["context_info"] = context_info
         self.auth_details = (os.environ.get("AUTH_USERNAME", ""), os.environ.get("AUTH_PASSWORD", ""))
         self.loaded_models = []
-        for item in self.config.get("models", []):
+        for item in self.config["context_info"].get("models", []):
             name = item.get("name", None)
             model_id = item.get("model_id", None)
             self.loaded_models.append(name)
@@ -161,7 +160,7 @@ class Context(BaseContext):
         imported_modules = []
         variables = {}
         code = self.agent.context.get_code("get_jupyter_variables")
-        await self.agent.context.beaker_kernel.evaluate(
+        await self.agent.context.evaluate(
             code,
             parent_header={},
         )

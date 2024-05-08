@@ -46,7 +46,7 @@ class Toolset:
             str: List of modules that can be installed using Pkg.add
         """
         code = agent.context.get_code("search_packages", {"module": name})
-        response = await agent.context.beaker_kernel.evaluate(
+        response = await agent.context.evaluate(
             code,
             parent_header={},
         )
@@ -67,7 +67,7 @@ class Toolset:
             dict: Information about the Mimi Model  
         """
         code = agent.context.get_code("model_info", {"model": model_var_name})
-        response = await agent.context.beaker_kernel.evaluate(
+        response = await agent.context.evaluate(
             code,
             parent_header={},
         )
@@ -85,7 +85,7 @@ class Toolset:
             str: Markdown of the module docs
         """
         code = agent.context.get_code("get_module_docs", {"module": package_name})
-        response = await agent.context.beaker_kernel.evaluate(
+        response = await agent.context.evaluate(
             code,
             parent_header={},
         )
@@ -129,7 +129,6 @@ class Toolset:
         )
         docs = response["return"]["docs"]
         return docs
-
 
 class Agent(NewBaseAgent):
     """

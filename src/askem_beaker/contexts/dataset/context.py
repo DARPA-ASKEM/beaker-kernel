@@ -25,14 +25,14 @@ class DatasetContext(BaseContext):
 
     agent_cls: "BaseAgent" = DatasetAgent
 
-    def __init__(self, beaker_kernel: "LLMKernel", subkernel: "BaseSubkernel", config: Dict[str, Any]) -> None:
+    def __init__(self, beaker_kernel: "LLMKernel", config: Dict[str, Any]) -> None:
         self.auth = get_auth()
         self.asset_map = {}
-        super().__init__(beaker_kernel, subkernel, self.agent_cls, config)
+        super().__init__(beaker_kernel, self.agent_cls, config)
 
-    async def setup(self, config: dict, parent_header):
-        self.config = config
-        await self.set_assets(self.config, parent_header=parent_header)
+    async def setup(self, context_info: dict, parent_header):
+        self.config["context_info"] = context_info
+        await self.set_assets(self.config["context_info"], parent_header=parent_header)
 
     async def post_execute(self, message):
         await self.update_asset_map(parent_header=message.parent_header)
@@ -114,7 +114,7 @@ class DatasetContext(BaseContext):
 
     async def update_asset_map(self, parent_header={}):
         code = self.get_code("df_info")
-        df_info_response = await self.beaker_kernel.evaluate(
+        df_info_response = await self.evaluate(
             code,
             parent_header=parent_header,
         )

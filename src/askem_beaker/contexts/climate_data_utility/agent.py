@@ -50,7 +50,7 @@ class ClimateDataUtilityToolset:
                 "geo_columns": geo_columns,
             },
         )
-        result = await agent.context.beaker_kernel.evaluate(
+        result = await agent.context.evaluate(
             code,
             parent_header={},
         )

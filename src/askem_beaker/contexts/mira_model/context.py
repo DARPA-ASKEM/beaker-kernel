@@ -31,15 +31,15 @@ class MiraModelContext(BaseContext):
     var_name: Optional[str] = "model"
     schema_name: Optional[str] = "petrinet"
 
-    def __init__(self, beaker_kernel: "LLMKernel", subkernel: "BaseSubkernel", config: Dict[str, Any]) -> None:
+    def __init__(self, beaker_kernel: "LLMKernel", config: Dict[str, Any]) -> None:
         self.reset()
         self.auth = get_auth()
-        super().__init__(beaker_kernel, subkernel, self.agent_cls, config)
+        super().__init__(beaker_kernel, self.agent_cls, config)
 
-    async def setup(self, config, parent_header):
-        self.config = config
-        item_id = config["id"]
-        item_type = config.get("type", "model")
+    async def setup(self, context_info, parent_header):
+        self.config["context_info"] = context_info
+        item_id = context_info["id"]
+        item_type = context_info.get("type", "model")
         print(f"Processing {item_type} AMR {item_id} as a MIRA model")
         await self.set_model(
             item_id, item_type, parent_header=parent_header

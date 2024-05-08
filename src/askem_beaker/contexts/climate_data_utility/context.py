@@ -26,22 +26,21 @@ class ClimateDataUtilityContext(BaseContext):
     def __init__(
         self,
         beaker_kernel: "LLMKernel",
-        subkernel: "BaseSubkernel",
         config: Dict[str, Any],
     ) -> None:
-        if not isinstance(subkernel, PythonSubkernel):
-            raise ValueError("This context is only valid for Python.")
         self.climate_data_utility__functions = {}
         self.config = config
         self.dataset_map = {}
-        super().__init__(beaker_kernel, subkernel, self.agent_cls, config)
+        super().__init__(beaker_kernel, self.agent_cls, config)
+        if not isinstance(self.subkernel, PythonSubkernel):
+            raise ValueError("This context is only valid for Python.")
 
     def get_auth(self) -> tuple[str, str]:
         return (os.getenv("AUTH_USERNAME", ""), os.getenv("AUTH_PASSWORD", ""))
 
-    async def setup(self, config, parent_header):
-        self.config = config
-        for name, dataset in self.config.items():
+    async def setup(self, context_info, parent_header):
+        self.config["context_info"] = context_info 
+        for name, dataset in self.config["context_info"].items():
             dataset_id = dataset.get("hmi_dataset_id", None)
             filename = dataset.get("filename", None)
             if dataset_id is None or filename is None:
@@ -110,7 +109,7 @@ class ClimateDataUtilityContext(BaseContext):
                 "identifier": new_dataset_filename,
             },
         )
-        create_response = await self.beaker_kernel.evaluate(
+        create_response = await self.evaluate(
             create_code,
             parent_header={},
         )
@@ -132,7 +131,7 @@ class ClimateDataUtilityContext(BaseContext):
             },
         )
 
-        result = await self.beaker_kernel.evaluate(
+        result = await self.evaluate(
             persist_code,
             parent_header={},
         )

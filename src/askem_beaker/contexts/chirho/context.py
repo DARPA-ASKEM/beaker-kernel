@@ -26,11 +26,8 @@ class ChirhoContext(BaseContext): #to change dynamically on new context creation
     def __init__(
         self,
         beaker_kernel: "LLMKernel",
-        subkernel: "BaseSubkernel",
         config: Dict[str, Any],
     ) -> None:
-        if not isinstance(subkernel, PythonSubkernel):
-            raise ValueError("This context is only valid for Python.")
         self.functions = {}
         self.config = config
         self.variables={}
@@ -45,13 +42,15 @@ class ChirhoContext(BaseContext): #to change dynamically on new context creation
             "library_names": ["chirho"],
             "task_description": "Causal Reasoning"
         }
-        super().__init__(beaker_kernel, subkernel, self.agent_cls, config)
+        super().__init__(beaker_kernel, self.agent_cls, config)
+        if not isinstance(self.subkernel, PythonSubkernel):
+            raise ValueError("This context is only valid for Python.")
         
     async def get_jupyter_context(self):
         imported_modules=[]
         variables={}
         code = self.agent.context.get_code("get_jupyter_variables")
-        await self.agent.context.beaker_kernel.evaluate(
+        await self.agent.context.evaluate(
             code,
             parent_header={},
         )

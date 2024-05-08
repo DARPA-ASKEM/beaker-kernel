@@ -116,7 +116,7 @@ class Toolset:
         """
         functions = {}
         code = agent.context.get_code("info", {"package_name": package_name})
-        info_response = await agent.context.beaker_kernel.evaluate(
+        info_response = await agent.context.evaluate(
             code,
             parent_header={},
         )

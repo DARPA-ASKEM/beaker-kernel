@@ -29,19 +29,19 @@ class MiraConfigEditContext(BaseContext):
     model_config_dict: Optional[dict[str, Any]]
     var_name: Optional[str] = "model_config"
 
-    def __init__(self, beaker_kernel: "LLMKernel", subkernel: "BaseSubkernel", config: Dict[str, Any]) -> None:
+    def __init__(self, beaker_kernel: "LLMKernel", config: Dict[str, Any]) -> None:
         self.reset()
         logger.error("initializing...")
-        super().__init__(beaker_kernel, subkernel, self.agent_cls, config)
+        super().__init__(beaker_kernel, self.agent_cls, config)
 
     def reset(self):
         pass
         
-    async def setup(self, config, parent_header):
+    async def setup(self, context_info, parent_header):
         logger.error(f"performing setup...")
-        self.config = config
-        item_id = config["id"]
-        item_type = config.get("type", "model_config")
+        self.config["context_info"] = context_info
+        item_id = config["context_info"]["id"]
+        item_type = config["context_info"].get("type", "model_config")
         logger.error(f"Processing {item_type} AMR {item_id} as a MIRA model")
         await self.set_model_config(
             item_id, item_type, parent_header=parent_header

@@ -17,14 +17,13 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-class Context(BaseContext):
+class MimiContext(BaseContext):
     slug = "bio"
     agent_cls: "NewBaseAgent" = Agent
 
     def __init__(
         self,
         beaker_kernel: "LLMKernel",
-        subkernel: "BaseSubkernel",
         config: Dict[str, Any],
     ) -> None:
         self.library_name="Mimi.jl"
@@ -37,7 +36,7 @@ class Context(BaseContext):
         self.few_shot_examples=''
         self.code_blocks=[] #{'code':str,'execution_status':not_executed,executed_successfully,'execution_order':int,'output':output from running code block most recent time.}
         self.code_block_print='\n\n'.join([f'Code Block[{i}]: {self.code_blocks[i]["code"]}\nExecution Status:{self.code_blocks[i]["execution_status"]}\nExecution Order:{self.code_blocks[i]["execution_order"]}\nCode Block Output or Error:{self.code_blocks[i]["output"]}' for i in range(len(self.code_blocks))])
-        super().__init__(beaker_kernel, subkernel, self.agent_cls, config)
+        super().__init__(beaker_kernel, self.agent_cls, config)
         
     async def render_code(self, message, code):
         self.send_response("iopub", "code_cell", {"code": code}, parent_header=message.header)
@@ -45,7 +44,7 @@ class Context(BaseContext):
     async def get_jupyter_context(self):
         imported_modules=[]
         variables={}
-        response = await self.agent.context.beaker_kernel.evaluate(
+        response = await self.evaluate(
             "import LLMConvenience; LLMConvenience.handle_response(LLMConvenience.session_state())",
             parent_header={},
         )
@@ -53,7 +52,7 @@ class Context(BaseContext):
         variables=jupyter_context['user_vars']
         imported_modules=jupyter_context['imported_modules']
 
-        response = await self.agent.context.beaker_kernel.evaluate(
+        response = await self.evaluate(
             "import LLMConvenience; LLMConvenience.handle_response(LLMConvenience.installed_dependencies())",
             parent_header={},
         )
