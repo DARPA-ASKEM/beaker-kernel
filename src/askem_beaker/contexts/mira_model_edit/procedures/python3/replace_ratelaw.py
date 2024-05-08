@@ -1,4 +1,4 @@
-def replace_rate_law_sympy(template_name, new_rate_law):
+def replace_rate_law_sympy(model, template_name, new_rate_law):
     """Replace the rate law of transition. The new rate law passed in will be a sympy.Expr object
 
     Parameters
@@ -23,4 +23,4 @@ def replace_rate_law_sympy(template_name, new_rate_law):
             template.set_rate_law(new_rate_law, local_dict=None)
     return tm
 
-model = replace_rate_law_sympy("{{ template_name }}", "{{ new_rate_law }}")
+model = replace_rate_law_sympy(model, "{{ template_name }}", "{{ new_rate_law }}")
