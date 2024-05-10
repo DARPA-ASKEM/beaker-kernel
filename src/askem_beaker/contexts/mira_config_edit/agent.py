@@ -38,7 +38,7 @@ class MiraConfigEditAgent(BaseAgent):
     @tool()
     async def get_parameters_initials(self, _type: str, agent: AgentRef, loop: LoopControllerRef):
         """
-        This tool is used when a user wants to see the names and values of the model configuration"s parameters.
+        This tool is used when a user wants to see the names and values of the model configuration's parameters.
         Please generate the code as if you were programming inside a Jupyter Notebook and the code is to be executed inside a cell.
         You MUST wrap the code with a line containing three backticks (```) before and after the generated code.
         No addtional text is needed in the response, just the code block.   

@@ -1,32 +1,15 @@
-template_params = {}
+_template_params = {}
 
-count = 0
-for tm in model_config.templates:
-    # Sanitize
-    count = count + 1
-    if tm.name == None or tm.name == "":
-        tm.name = "generated-" + str(count)
-
-    params = tm.get_parameter_names()
-    params = list(params)
-
-    subject = None
-    outcome = None
-
-    if hasattr(tm, 'subject'):
-        subject = tm.subject.name
-
-    if hasattr(tm, "outcome"):
-        outcome = tm.outcome.name
-
-    controllers = [x.name for x in tm.get_controllers()]
-    entry = {
-        "name": tm.name,
-        "params": params,
-        "subject": subject,
-        "outcome": outcome,
-        "controllers": controllers
+_count = 0
+for _tm in model_config.templates:
+    _count += 1
+    _name = getattr(_tm, "name", f"generated-{_count}")
+    _template_params[_name] = {
+        "name": _name,
+        "params": list(_tm.get_parameter_names()),
+        "subject": _tm.subject.name if hasattr(_tm, 'subject') else None,
+        "outcome": _tm.outcome.name if hasattr(_tm, 'outcome') else None,
+        "controllers": [x.name for x in _tm.get_controllers()],
     }
-    template_params[tm.name] = entry
 
-template_params
+_template_params

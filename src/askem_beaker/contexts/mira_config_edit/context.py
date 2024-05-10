@@ -104,9 +104,9 @@ class MiraConfigEditContext(BaseContext):
         Returns:
             str: a JSON representation of the parameter interactions
         """
-        template_params = (
-            await self.evaluate(self.get_code("template_params")))["return"]
-        return json.dumps(template_params, indent=2)
+
+        result = await self.evaluate(self.get_code("template_params")) 
+        return json.dumps(result["return"], indent=2)
 
     async def model_structure(self) -> str:
         """
@@ -118,12 +118,9 @@ class MiraConfigEditContext(BaseContext):
         Returns:
             str: a textual representation of the model
         """
-        # Update the local dataframe to match what's in the shell.
-        # This will be factored out when we switch around to allow using multiple runtimes.
-        amr = (
-            await self.evaluate(self.get_code("model_to_json", {"var_name": self.var_name, "schema_name": self.schema_name}))
-        )["return"]
-        return json.dumps(amr, indent=2)        
+        code = self.get_code("model_to_json", {"var_name": self.var_name, "schema_name": self.schema_name})
+        result = await self.evaluate(code)
+        return json.dumps(result["return"], indent=2)        
 
     @intercept()
     async def save_model_config_request(self, message):
