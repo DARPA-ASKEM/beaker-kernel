@@ -13,7 +13,9 @@ services:
       - DEBUG=1
       - JUPYTER_SERVER=http://jupyter:8888
       - JUPYTER_TOKEN=89f73481102c46c0bc13b2998f9a4fce
-      - ENABLE_USER_PROMPT=true
+      - TOOL_ENABLED_ASK_USER=false
+      - TOOL_ENABLED_RUN_CODE=false
+      - ENABLE_CHECKPOINTS=false
       - OPENAI_API_KEY
     env_file:
       - .env      
