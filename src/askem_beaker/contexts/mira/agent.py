@@ -227,6 +227,8 @@ class Agent(NewBaseAgent):
     If you don't have the details necessary, you should use the ask_user tool to ask the user for them.
     """
 
+    MODEL = "gpt-4o"
+    
     def __init__(self, context: BaseContext = None, tools: list = None, **kwargs):
         tools = [Toolset]
         super().__init__(context, tools, **kwargs)
