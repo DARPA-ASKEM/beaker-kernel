@@ -13,6 +13,7 @@ from beaker_kernel.lib.jupyter_kernel_proxy import JupyterMessage
 logging.disable(logging.WARNING)  # Disable warnings
 logger = logging.Logger(__name__)
 
+from mira.sources.amr import model_from_json; 
 
 class MiraConfigEditAgent(BaseAgent):
     """
@@ -74,11 +75,26 @@ class MiraConfigEditAgent(BaseAgent):
 
         Please generate the code as if you were programming inside a Jupyter Notebook and the code is to be executed inside a cell.
         You MUST wrap the code with a line containing three backticks (```) before and after the generated code.
-        No addtional text is needed in the response, just the code block.   
+        No addtional text is needed in the response, just the code block.  
 
         Args:
             parameter_values (dict): the dictionary of parameter names and the values to update them with
         """
+        # load in model config's parameters to use in comparison to the 
+        # user provided parameters to update
+        model_config = model_from_json(agent.context.amr)
+        model_params = model_config.parameters.keys()
+        user_params = parameter_values['parameter_values'].keys()
+
+        # check if any in user_params is not in model_params and return an error
+        if not all(param in model_params for param in user_params):
+            loop.set_state(loop.STOP_FATAL)
+            error_message = f"It looks like you're trying to update parameter(s) that don't exist: " \
+                            f"{', '.join(param for param in user_params if param not in model_params)}." \
+                            f"Please ensure you are updating a valid parameter: " \
+                            f"{', '.join(param for param in model_params)}"
+            return error_message
+
         loop.set_state(loop.STOP_SUCCESS)
         code = agent.context.get_code("update_params", {"parameter_values": parameter_values})
         return json.dumps(
