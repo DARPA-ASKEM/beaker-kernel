@@ -19,6 +19,7 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
+from mira.sources.amr import model_from_json; 
 
 class MiraConfigEditContext(BaseContext):
 
@@ -64,6 +65,7 @@ class MiraConfigEditContext(BaseContext):
         self.original_amr = copy.deepcopy(self.amr)
         if self.amr:
             await self.load_mira()
+            self.model_config = model_from_json(self.amr)            
         else:
             raise Exception(f"Model config '{item_id}' not found.")
         await self.send_mira_preview_message(parent_header=parent_header)
